@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "include": ["packages/**/src/**", "packages/**/tests/**"],
+    "include": ["packages/**/src/**", "packages/**/tests/**", "apps/**/src/**", "apps/**/tests/**"],
     "ignore": ["**/dist/**"]
   },
   "formatter": {
@@ -15,6 +15,9 @@
     "lineWidth": 100
   },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "quoteStyle": "single",
       "trailingCommas": "all"
@@ -28,11 +31,19 @@
   },
   "overrides": [
     {
-      "include": ["packages/**/tests/**"],
+      "include": ["packages/**/tests/**", "apps/**/tests/**"],
       "linter": {
         "rules": {
           "style": { "noNonNullAssertion": "off" },
           "performance": { "noDelete": "off" }
+        }
+      }
+    },
+    {
+      "include": ["apps/**/src/**"],
+      "linter": {
+        "rules": {
+          "style": { "useImportType": "off" }
         }
       }
     }

@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Experiment {
+  id        String              @id @default(uuid())
+  title     String
+  draft     Json
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  versions  ExperimentVersion[]
+}
+
+/// 发布后的不可变版本：Definition 整体 JSONB 快照，只插不改。
+model ExperimentVersion {
+  id             String          @id @default(uuid())
+  experimentId   String
+  experiment     Experiment      @relation(fields: [experimentId], references: [id])
+  version        Int
+  definition     Json
+  publishedAt    DateTime        @default(now())
+  runs           ExperimentRun[]
+
+  @@unique([experimentId, version])
+}
+
+/// Run 行即快照：currentNodeId/state/lastSequence 直接保存。
+model ExperimentRun {
+  id                  String            @id @default(uuid())
+  experimentVersionId String
+  experimentVersion   ExperimentVersion @relation(fields: [experimentVersionId], references: [id])
+  studentId           String
+  status              String
+  currentNodeId       String
+  state               Json
+  lastSequence        Int               @default(0)
+  startedAt           DateTime          @default(now())
+  completedAt         DateTime?
+  events              ExperimentEvent[]
+}
+
+/// append-only；(runId, sequence) 唯一约束兜底并发。
+model ExperimentEvent {
+  id          String        @id @default(uuid())
+  runId       String
+  run         ExperimentRun @relation(fields: [runId], references: [id])
+  sequence    Int
+  type        String
+  nodeId      String?
+  payload     Json
+  stateBefore Json?
+  stateAfter  Json?
+  timestamp   DateTime      @default(now())
+
+  @@unique([runId, sequence])
+  @@index([runId, sequence])
+}
+
+/// 资源只登记逻辑引用，不存任何供应商 URL。
+model Asset {
+  id        String   @id @default(uuid())
+  assetId   String   @unique
+  type      String
+  name      String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+}

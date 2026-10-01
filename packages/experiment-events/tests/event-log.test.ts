@@ -50,38 +50,40 @@ describe('experiment-events', () => {
     expect(api).not.toContain('remove');
   });
 
-  it('assigns monotonically increasing sequences per run', () => {
+  it('assigns monotonically increasing sequences per run', async () => {
     const log = new InMemoryEventLog();
-    const e1 = log.append(makeEvent('r1', 'RUN_STARTED'));
-    const e2 = log.append(makeEvent('r1', 'NODE_ENTERED'));
-    const e3 = log.append(makeEvent('r1', 'VARIABLE_CHANGED'));
+    const e1 = await log.append(makeEvent('r1', 'RUN_STARTED'));
+    const e2 = await log.append(makeEvent('r1', 'NODE_ENTERED'));
+    const e3 = await log.append(makeEvent('r1', 'VARIABLE_CHANGED'));
     expect([e1.sequence, e2.sequence, e3.sequence]).toEqual([1, 2, 3]);
-    expect(log.getByRun('r1').map((e) => e.sequence)).toEqual([1, 2, 3]);
+    expect((await log.getByRun('r1')).map((e) => e.sequence)).toEqual([1, 2, 3]);
   });
 
-  it('rejects explicit out-of-order or duplicate sequences', () => {
+  it('rejects explicit out-of-order or duplicate sequences', async () => {
     const log = new InMemoryEventLog();
-    log.append(makeEvent('r1', 'RUN_STARTED'));
-    log.append(makeEvent('r1', 'NODE_ENTERED'));
-    expect(() => log.append({ ...makeEvent('r1', 'VARIABLE_CHANGED'), sequence: 2 })).toThrow(
-      SequenceConflictError,
-    );
-    expect(() => log.append({ ...makeEvent('r1', 'VARIABLE_CHANGED'), sequence: 5 })).toThrow(
-      SequenceConflictError,
-    );
+    await log.append(makeEvent('r1', 'RUN_STARTED'));
+    await log.append(makeEvent('r1', 'NODE_ENTERED'));
+    await expect(
+      log.append({ ...makeEvent('r1', 'VARIABLE_CHANGED'), sequence: 2 }),
+    ).rejects.toThrow(SequenceConflictError);
+    await expect(
+      log.append({ ...makeEvent('r1', 'VARIABLE_CHANGED'), sequence: 5 }),
+    ).rejects.toThrow(SequenceConflictError);
     // 显式携带正确的下一个 sequence 则允许
-    expect(log.append({ ...makeEvent('r1', 'VARIABLE_CHANGED'), sequence: 3 }).sequence).toBe(3);
+    expect(
+      (await log.append({ ...makeEvent('r1', 'VARIABLE_CHANGED'), sequence: 3 })).sequence,
+    ).toBe(3);
   });
 
-  it('isolates event streams by runId', () => {
+  it('isolates event streams by runId', async () => {
     const log = new InMemoryEventLog();
-    log.append(makeEvent('r1', 'RUN_STARTED'));
-    log.append(makeEvent('r2', 'RUN_STARTED'));
-    log.append(makeEvent('r1', 'NODE_ENTERED'));
-    log.append(makeEvent('r2', 'RUN_COMPLETED'));
-    expect(log.getByRun('r1').map((e) => e.type)).toEqual(['RUN_STARTED', 'NODE_ENTERED']);
-    expect(log.getByRun('r2').map((e) => e.type)).toEqual(['RUN_STARTED', 'RUN_COMPLETED']);
-    expect(log.lastSequence('r1')).toBe(2);
-    expect(log.lastSequence('r2')).toBe(2);
+    await log.append(makeEvent('r1', 'RUN_STARTED'));
+    await log.append(makeEvent('r2', 'RUN_STARTED'));
+    await log.append(makeEvent('r1', 'NODE_ENTERED'));
+    await log.append(makeEvent('r2', 'RUN_COMPLETED'));
+    expect((await log.getByRun('r1')).map((e) => e.type)).toEqual(['RUN_STARTED', 'NODE_ENTERED']);
+    expect((await log.getByRun('r2')).map((e) => e.type)).toEqual(['RUN_STARTED', 'RUN_COMPLETED']);
+    expect(await log.lastSequence('r1')).toBe(2);
+    expect(await log.lastSequence('r2')).toBe(2);
   });
 });

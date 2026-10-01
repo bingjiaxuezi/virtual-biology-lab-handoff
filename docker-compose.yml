@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vlab-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vlab
+      POSTGRES_PASSWORD: vlab_dev_password
+      POSTGRES_DB: virtual_biology_lab
+    ports:
+      - '5432:5432'
+    volumes:
+      - vlab-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U vlab -d virtual_biology_lab']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  vlab-postgres-data:

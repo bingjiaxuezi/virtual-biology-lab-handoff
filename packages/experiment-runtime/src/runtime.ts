@@ -13,7 +13,7 @@ import type {
 import { experimentDefinitionSchema } from '@virtual-biology-lab/experiment-schema';
 import { validateExperiment } from '@virtual-biology-lab/experiment-validator';
 import { type Actor, createActor } from 'xstate';
-import { type MachineContext, type MachineEvent, compileMachine } from './machine.js';
+import { type MachineContext, compileMachine } from './machine.js';
 import { buildInitialState, evaluateRules } from './rules.js';
 import type {
   DispatchResult,
@@ -42,11 +42,11 @@ export interface ExperimentRuntime {
     studentId: string;
     runId?: string;
   }): StartRunResult;
-  start(runId: string): DispatchResult;
-  dispatch(runId: string, command: RuntimeCommand): DispatchResult;
+  start(runId: string): Promise<DispatchResult>;
+  dispatch(runId: string, command: RuntimeCommand): Promise<DispatchResult>;
   abort(runId: string): void;
   getRun(runId: string): RunView | undefined;
-  snapshot(runId: string): RunSnapshot | undefined;
+  snapshot(runId: string): Promise<RunSnapshot | undefined>;
   restore(snapshot: RunSnapshot, definition: unknown): StartRunResult;
   recordAIEvent(
     runId: string,
@@ -59,7 +59,7 @@ export interface ExperimentRuntime {
       | 'AI_REVIEW_GENERATED'
     >,
     payload?: Record<string, unknown>,
-  ): ExperimentEvent | undefined;
+  ): Promise<ExperimentEvent | undefined>;
 }
 
 function now(): string {
@@ -125,7 +125,7 @@ export function createExperimentRuntime(options: {
     nodeId?: string,
     stateBefore?: RunState,
     stateAfter?: RunState,
-  ): ExperimentEvent {
+  ): Promise<ExperimentEvent> {
     return eventLog.append({
       runId: record.runId,
       type,
@@ -185,10 +185,10 @@ export function createExperimentRuntime(options: {
     return record;
   }
 
-  function handleSetVariable(
+  async function handleSetVariable(
     record: RunRecord,
     command: Extract<RuntimeCommand, { type: 'SET_VARIABLE' }>,
-  ): DispatchResult {
+  ): Promise<DispatchResult> {
     const node = record.definition.nodes.find((n) => n.id === currentNodeId(record));
     if (node?.type !== 'VARIABLE_INPUT' || node.config.variableId !== command.variableId) {
       return fail(
@@ -209,7 +209,7 @@ export function createExperimentRuntime(options: {
       score: stateBefore.score,
     };
     events.push(
-      emit(
+      await emit(
         record,
         'VARIABLE_CHANGED',
         { variableId: command.variableId, from: previous, to: command.value },
@@ -222,7 +222,7 @@ export function createExperimentRuntime(options: {
     const { state: finalState, steps } = evaluateRules(record.definition, afterSet);
     for (const step of steps) {
       events.push(
-        emit(
+        await emit(
           record,
           'RULE_APPLIED',
           {
@@ -236,7 +236,7 @@ export function createExperimentRuntime(options: {
       );
       for (const change of step.variableChanges) {
         events.push(
-          emit(
+          await emit(
             record,
             'VARIABLE_CHANGED',
             { variableId: change.variableId, from: change.from, to: change.to, source: 'RULE' },
@@ -250,7 +250,7 @@ export function createExperimentRuntime(options: {
     return { ok: true, events };
   }
 
-  function handleAdvance(record: RunRecord): DispatchResult {
+  async function handleAdvance(record: RunRecord): Promise<DispatchResult> {
     const beforeNode = currentNodeId(record);
     record.actor.send({ type: 'ADVANCE' });
     const afterNode = currentNodeId(record);
@@ -261,12 +261,12 @@ export function createExperimentRuntime(options: {
       (t) => t.from === beforeNode && t.to === afterNode,
     );
     const events: ExperimentEvent[] = [
-      emit(record, 'TRANSITION_TAKEN', {
+      await emit(record, 'TRANSITION_TAKEN', {
         transitionId: transition?.id,
         from: beforeNode,
         to: afterNode,
       }),
-      emit(record, 'NODE_ENTERED', {}, afterNode),
+      await emit(record, 'NODE_ENTERED', {}, afterNode),
     ];
 
     const targetNode = record.definition.nodes.find((n) => n.id === afterNode);
@@ -274,7 +274,7 @@ export function createExperimentRuntime(options: {
       record.status = 'COMPLETED';
       record.completedAt = now();
       events.push(
-        emit(
+        await emit(
           record,
           'RUN_COMPLETED',
           { outcome: targetNode.config?.outcome, finalState: currentContext(record) },
@@ -297,7 +297,7 @@ export function createExperimentRuntime(options: {
       return { ok: true, run: toView(record) };
     },
 
-    start(runId) {
+    async start(runId) {
       const record = runs.get(runId);
       if (!record) return fail(`Run "${runId}" does not exist`);
       if (record.status !== 'CREATED')
@@ -305,16 +305,16 @@ export function createExperimentRuntime(options: {
       record.status = 'RUNNING';
       const startNodeId = currentNodeId(record);
       const events = [
-        emit(record, 'RUN_STARTED', {
+        await emit(record, 'RUN_STARTED', {
           experimentVersionId: record.experimentVersionId,
           studentId: record.studentId,
         }),
-        emit(record, 'NODE_ENTERED', {}, startNodeId),
+        await emit(record, 'NODE_ENTERED', {}, startNodeId),
       ];
       return { ok: true, events };
     },
 
-    dispatch(runId, command) {
+    async dispatch(runId, command) {
       const recordOrFailure = getRunning(runId);
       if (!isRecord(recordOrFailure)) return recordOrFailure;
       const record = recordOrFailure;
@@ -330,7 +330,12 @@ export function createExperimentRuntime(options: {
           return {
             ok: true,
             events: [
-              emit(record, 'ACTION_PERFORMED', { actionKind: node.config.actionKind }, node.id),
+              await emit(
+                record,
+                'ACTION_PERFORMED',
+                { actionKind: node.config.actionKind },
+                node.id,
+              ),
             ],
           };
         }
@@ -341,7 +346,7 @@ export function createExperimentRuntime(options: {
           if (!command.text.trim()) return fail('Observation text must not be empty');
           return {
             ok: true,
-            events: [emit(record, 'OBSERVATION_SUBMITTED', { text: command.text }, node.id)],
+            events: [await emit(record, 'OBSERVATION_SUBMITTED', { text: command.text }, node.id)],
           };
         }
         case 'ANSWER_QUESTION': {
@@ -351,7 +356,7 @@ export function createExperimentRuntime(options: {
           if (!command.answer.trim()) return fail('Answer must not be empty');
           return {
             ok: true,
-            events: [emit(record, 'QUESTION_ANSWERED', { answer: command.answer }, node.id)],
+            events: [await emit(record, 'QUESTION_ANSWERED', { answer: command.answer }, node.id)],
           };
         }
         case 'ADVANCE':
@@ -373,7 +378,7 @@ export function createExperimentRuntime(options: {
       return record ? toView(record) : undefined;
     },
 
-    snapshot(runId) {
+    async snapshot(runId) {
       const record = runs.get(runId);
       if (!record) return undefined;
       const snapshot: RunSnapshot = {
@@ -383,7 +388,7 @@ export function createExperimentRuntime(options: {
         status: record.status,
         currentNodeId: currentNodeId(record),
         state: currentContext(record),
-        lastSequence: eventLog.lastSequence(runId),
+        lastSequence: await eventLog.lastSequence(runId),
         startedAt: record.startedAt,
       };
       if (record.completedAt !== undefined) snapshot.completedAt = record.completedAt;
@@ -411,7 +416,7 @@ export function createExperimentRuntime(options: {
       return { ok: true, run: toView(record) };
     },
 
-    recordAIEvent(runId, type, payload = {}) {
+    async recordAIEvent(runId, type, payload = {}) {
       const record = runs.get(runId);
       if (!record) return undefined;
       return emit(record, type, payload, currentNodeId(record));

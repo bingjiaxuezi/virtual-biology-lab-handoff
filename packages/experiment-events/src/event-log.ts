@@ -8,11 +8,12 @@ import {
 /**
  * Event Log：append-only 事实记录。
  * 不提供 update/delete；sequence 由 Log 分配（或校验调用方携带的 sequence 恰好为下一个）。
+ * 接口为异步，以便数据库等持久化实现与内存实现同构。
  */
 export interface EventLog {
-  append(input: NewExperimentEvent & { sequence?: number }): ExperimentEvent;
-  getByRun(runId: string): ExperimentEvent[];
-  lastSequence(runId: string): number;
+  append(input: NewExperimentEvent & { sequence?: number }): Promise<ExperimentEvent>;
+  getByRun(runId: string): Promise<ExperimentEvent[]>;
+  lastSequence(runId: string): Promise<number>;
 }
 
 export class SequenceConflictError extends Error {
@@ -31,7 +32,7 @@ export class SequenceConflictError extends Error {
 export class InMemoryEventLog implements EventLog {
   private readonly eventsByRun = new Map<string, ExperimentEvent[]>();
 
-  append(input: NewExperimentEvent & { sequence?: number }): ExperimentEvent {
+  async append(input: NewExperimentEvent & { sequence?: number }): Promise<ExperimentEvent> {
     const parsed = newExperimentEventSchema.parse(input);
     const events = this.eventsByRun.get(input.runId) ?? [];
     const nextSequence = events.length + 1;
@@ -48,11 +49,11 @@ export class InMemoryEventLog implements EventLog {
     return event;
   }
 
-  getByRun(runId: string): ExperimentEvent[] {
+  async getByRun(runId: string): Promise<ExperimentEvent[]> {
     return [...(this.eventsByRun.get(runId) ?? [])];
   }
 
-  lastSequence(runId: string): number {
+  async lastSequence(runId: string): Promise<number> {
     return this.eventsByRun.get(runId)?.length ?? 0;
   }
 }
