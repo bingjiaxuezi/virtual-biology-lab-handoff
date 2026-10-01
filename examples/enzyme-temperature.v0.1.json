@@ -1,0 +1,210 @@
+{
+  "schemaVersion": "0.1",
+  "id": "exp_enzyme_temperature",
+  "version": 1,
+  "metadata": {
+    "title": "温度对酶活性的影响",
+    "description": "研究不同温度条件下酶活性变化。"
+  },
+  "teaching": {
+    "objectives": [
+      "理解温度对酶活性的影响",
+      "观察高温导致酶活性下降的现象"
+    ],
+    "theory": "酶活性随温度变化，在适宜区间内升高，过高温度可能导致酶结构破坏。"
+  },
+  "variables": [
+    {
+      "id": "temperature",
+      "name": "温度",
+      "type": "NUMBER",
+      "defaultValue": 25,
+      "min": 0,
+      "max": 100,
+      "unit": "℃"
+    },
+    {
+      "id": "sampleStatus",
+      "name": "样本状态",
+      "type": "ENUM",
+      "defaultValue": "NORMAL",
+      "options": [
+        "NORMAL",
+        "DENATURED"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "normal_video",
+      "assetId": "asset_normal_video",
+      "type": "VIDEO"
+    },
+    {
+      "id": "denatured_video",
+      "assetId": "asset_denatured_video",
+      "type": "VIDEO"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "type": "START",
+      "title": "开始"
+    },
+    {
+      "id": "set_temp",
+      "type": "VARIABLE_INPUT",
+      "title": "设置实验温度",
+      "config": {
+        "variableId": "temperature",
+        "inputMode": "SLIDER"
+      }
+    },
+    {
+      "id": "check_temp",
+      "type": "CONDITION",
+      "title": "判断温度"
+    },
+    {
+      "id": "normal_media",
+      "type": "MEDIA",
+      "title": "正常反应",
+      "config": {
+        "assetRefId": "normal_video"
+      }
+    },
+    {
+      "id": "denatured_media",
+      "type": "MEDIA",
+      "title": "高温失活",
+      "config": {
+        "assetRefId": "denatured_video"
+      }
+    },
+    {
+      "id": "observe",
+      "type": "OBSERVATION",
+      "title": "记录实验现象",
+      "config": {
+        "fields": [
+          {
+            "id": "description",
+            "type": "TEXT",
+            "label": "描述你观察到的实验现象"
+          }
+        ]
+      }
+    },
+    {
+      "id": "end",
+      "type": "END",
+      "title": "结束"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "t1",
+      "from": "start",
+      "to": "set_temp"
+    },
+    {
+      "id": "t2",
+      "from": "set_temp",
+      "to": "check_temp"
+    },
+    {
+      "id": "t3",
+      "from": "check_temp",
+      "to": "denatured_media",
+      "condition": {
+        "variableId": "temperature",
+        "operator": "GT",
+        "value": 60
+      },
+      "priority": 10
+    },
+    {
+      "id": "t4",
+      "from": "check_temp",
+      "to": "normal_media",
+      "condition": {
+        "variableId": "temperature",
+        "operator": "LTE",
+        "value": 60
+      },
+      "priority": 5
+    },
+    {
+      "id": "t5",
+      "from": "denatured_media",
+      "to": "observe"
+    },
+    {
+      "id": "t6",
+      "from": "normal_media",
+      "to": "observe"
+    },
+    {
+      "id": "t7",
+      "from": "observe",
+      "to": "end"
+    }
+  ],
+  "rules": [
+    {
+      "id": "r_high_temp",
+      "when": {
+        "variableId": "temperature",
+        "operator": "GT",
+        "value": 60
+      },
+      "effects": [
+        {
+          "type": "SET",
+          "variableId": "sampleStatus",
+          "value": "DENATURED"
+        }
+      ]
+    },
+    {
+      "id": "r_normal_temp",
+      "when": {
+        "variableId": "temperature",
+        "operator": "LTE",
+        "value": 60
+      },
+      "effects": [
+        {
+          "type": "SET",
+          "variableId": "sampleStatus",
+          "value": "NORMAL"
+        }
+      ]
+    }
+  ],
+  "assessment": {
+    "initialScore": 0,
+    "completionNodeIds": [
+      "end"
+    ]
+  },
+  "aiPolicy": {
+    "briefing": {
+      "enabled": true
+    },
+    "tutor": {
+      "enabled": true,
+      "hintLevel": "STANDARD",
+      "allowExplainTheory": true,
+      "allowPointOutWrongDirection": false,
+      "revealAnswer": false
+    },
+    "observationAssist": {
+      "enabled": true
+    },
+    "review": {
+      "enabled": true
+    }
+  }
+}
