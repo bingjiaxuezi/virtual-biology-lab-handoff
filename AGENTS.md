@@ -36,6 +36,17 @@
 - AI 生成约束变化
 - Provider 接口变化
 
+## OpenSpec 工作流（强制）
+
+本仓库已通过 OpenSpec（`@fission-ai/openspec`）进行规格驱动开发，所有任务必须走 OpenSpec 流程：
+
+1. **先提案，后编码**：任何新功能、行为变化、架构调整或上述"复杂任务"列表中的事项，必须先创建 Change Proposal（`$openspec-propose`），经确认后才能实现。禁止绕过提案直接改代码。
+2. **提案产物**：提案必须包含 `proposal.md`、`tasks.md` 以及涉及的 spec delta，全部用中文撰写（结构标题和 SHALL/MUST 关键字保留英文，见 `openspec/config.yaml`）。
+3. **按 tasks 实施**：实现时使用 `$openspec-apply-change`，严格按 `tasks.md` 勾选推进；实现不得偏离已批准的 spec delta。
+4. **完成后归档**：任务验收后用 `$openspec-archive-change` 归档，将 delta 合并进 `openspec/specs/` 的正式规格。
+5. **规格即文档**：`openspec/specs/` 中的规格与 `docs/` 文档必须保持一致；两者冲突时先解决冲突再继续开发。
+6. OpenSpec 技能位于 `.agents/skills/`，不要手工编辑其中的技能文件；升级 OpenSpec 后运行 `openspec update` 同步。
+
 ## 当前优先级
 
 Phase 1：
