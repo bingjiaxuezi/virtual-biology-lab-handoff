@@ -1,0 +1,30 @@
+{
+  "name": "@virtual-biology-lab/experiment-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@virtual-biology-lab/capability-registry": "workspace:*",
+    "@virtual-biology-lab/experiment-events": "workspace:*",
+    "@virtual-biology-lab/experiment-schema": "workspace:*",
+    "@virtual-biology-lab/experiment-validator": "workspace:*",
+    "xstate": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

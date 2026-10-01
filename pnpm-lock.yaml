@@ -18,6 +18,9 @@ catalogs:
     vitest:
       specifier: ^3.2.0
       version: 3.2.7
+    xstate:
+      specifier: ^5.19.0
+      version: 5.33.2
     zod:
       specifier: ^4.1.0
       version: 4.6.5
@@ -41,6 +44,53 @@ importers:
       '@virtual-biology-lab/experiment-schema':
         specifier: workspace:*
         version: link:../experiment-schema
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.7(@types/node@24.19.0)
+
+  packages/experiment-events:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.7(@types/node@24.19.0)
+
+  packages/experiment-runtime:
+    dependencies:
+      '@virtual-biology-lab/capability-registry':
+        specifier: workspace:*
+        version: link:../capability-registry
+      '@virtual-biology-lab/experiment-events':
+        specifier: workspace:*
+        version: link:../experiment-events
+      '@virtual-biology-lab/experiment-schema':
+        specifier: workspace:*
+        version: link:../experiment-schema
+      '@virtual-biology-lab/experiment-validator':
+        specifier: workspace:*
+        version: link:../experiment-validator
+      xstate:
+        specifier: 'catalog:'
+        version: 5.33.2
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -719,6 +769,9 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
+  xstate@5.33.2:
+    resolution: {integrity: sha512-8tC7yXgeCvpT8gKEeEje6ikJJG1wpnoLiXe+HfECW8m10ubMd3QxKOwWA8KxPJVBcLwfdRoMKYxIBGYKmo37/A==}
+
   zod@4.6.5:
     resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
 
@@ -1203,5 +1256,7 @@ snapshots:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
+
+  xstate@5.33.2: {}
 
   zod@4.6.5: {}
