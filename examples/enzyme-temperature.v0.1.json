@@ -4,14 +4,18 @@
   "version": 1,
   "metadata": {
     "title": "温度对酶活性的影响",
-    "description": "研究不同温度条件下酶活性变化。"
+    "description": "研究不同温度条件下酶活性变化。",
+    "subject": "生物",
+    "gradeLevel": "高中",
+    "tags": ["酶", "温度", "对照实验"]
   },
   "teaching": {
     "objectives": [
       "理解温度对酶活性的影响",
       "观察高温导致酶活性下降的现象"
     ],
-    "theory": "酶活性随温度变化，在适宜区间内升高，过高温度可能导致酶结构破坏。"
+    "durationMinutes": 30,
+    "prerequisites": ["了解酶的基本概念"]
   },
   "variables": [
     {
@@ -28,34 +32,33 @@
       "name": "样本状态",
       "type": "ENUM",
       "defaultValue": "NORMAL",
-      "options": [
-        "NORMAL",
-        "DENATURED"
-      ]
+      "options": ["NORMAL", "DENATURED"]
     }
   ],
   "assets": [
     {
       "id": "normal_video",
       "assetId": "asset_normal_video",
-      "type": "VIDEO"
+      "type": "VIDEO",
+      "name": "正常温度下的反应现象"
     },
     {
       "id": "denatured_video",
       "assetId": "asset_denatured_video",
-      "type": "VIDEO"
+      "type": "VIDEO",
+      "name": "高温失活现象"
     }
   ],
   "nodes": [
     {
       "id": "start",
       "type": "START",
-      "title": "开始"
+      "label": "开始"
     },
     {
       "id": "set_temp",
       "type": "VARIABLE_INPUT",
-      "title": "设置实验温度",
+      "label": "设置实验温度",
       "config": {
         "variableId": "temperature",
         "inputMode": "SLIDER"
@@ -64,42 +67,59 @@
     {
       "id": "check_temp",
       "type": "CONDITION",
-      "title": "判断温度"
+      "label": "判断温度是否超过 60℃",
+      "config": {
+        "condition": {
+          "variableId": "temperature",
+          "operator": "GT",
+          "value": 60
+        }
+      }
     },
     {
       "id": "normal_media",
       "type": "MEDIA",
-      "title": "正常反应",
+      "label": "正常反应现象",
       "config": {
-        "assetRefId": "normal_video"
+        "assetId": "asset_normal_video",
+        "mediaType": "VIDEO",
+        "caption": "适宜温度下酶促反应正常进行"
       }
     },
     {
       "id": "denatured_media",
       "type": "MEDIA",
-      "title": "高温失活",
+      "label": "高温失活现象",
       "config": {
-        "assetRefId": "denatured_video"
+        "assetId": "asset_denatured_video",
+        "mediaType": "VIDEO",
+        "caption": "高温导致酶变性失活"
       }
     },
     {
       "id": "observe",
       "type": "OBSERVATION",
-      "title": "记录实验现象",
+      "label": "记录实验现象",
       "config": {
-        "fields": [
-          {
-            "id": "description",
-            "type": "TEXT",
-            "label": "描述你观察到的实验现象"
-          }
-        ]
+        "prompt": "描述你观察到的实验现象",
+        "placeholder": "例如：颜色变化、气泡产生情况……"
       }
     },
     {
-      "id": "end",
+      "id": "end_normal",
       "type": "END",
-      "title": "结束"
+      "label": "实验完成（正常）",
+      "config": {
+        "outcome": "NORMAL"
+      }
+    },
+    {
+      "id": "end_denatured",
+      "type": "END",
+      "label": "实验完成（酶失活）",
+      "config": {
+        "outcome": "DENATURED"
+      }
     }
   ],
   "transitions": [
@@ -148,7 +168,24 @@
     {
       "id": "t7",
       "from": "observe",
-      "to": "end"
+      "to": "end_normal",
+      "condition": {
+        "variableId": "sampleStatus",
+        "operator": "EQ",
+        "value": "NORMAL"
+      },
+      "priority": 10
+    },
+    {
+      "id": "t8",
+      "from": "observe",
+      "to": "end_denatured",
+      "condition": {
+        "variableId": "sampleStatus",
+        "operator": "EQ",
+        "value": "DENATURED"
+      },
+      "priority": 5
     }
   ],
   "rules": [
@@ -164,6 +201,10 @@
           "type": "SET",
           "variableId": "sampleStatus",
           "value": "DENATURED"
+        },
+        {
+          "type": "SCORE",
+          "value": 10
         }
       ]
     },
@@ -179,15 +220,23 @@
           "type": "SET",
           "variableId": "sampleStatus",
           "value": "NORMAL"
+        },
+        {
+          "type": "SCORE",
+          "value": 20
         }
       ]
     }
   ],
   "assessment": {
     "initialScore": 0,
-    "completionNodeIds": [
-      "end"
-    ]
+    "completion": {
+      "type": "REACH_END"
+    },
+    "summary": {
+      "showScore": true,
+      "showKeyEvents": true
+    }
   },
   "aiPolicy": {
     "briefing": {
