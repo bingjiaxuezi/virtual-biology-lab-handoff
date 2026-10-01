@@ -12,3 +12,10 @@
 #### Scenario: 未发布实验不出现
 - **WHEN** 某实验只有草稿从未发布
 - **THEN** 目录中不包含该实验
+
+### Requirement: 学生可读取已发布版本定义
+系统 MUST 提供按版本 id 读取已发布 ExperimentVersion 完整 Definition 快照的端点；已发布内容对学生只读，MUST NOT 提供修改入口。
+
+#### Scenario: 读取已发布版本
+- **WHEN** 学生请求某个已发布版本的 Definition
+- **THEN** 返回该版本发布时的完整 Definition 快照
