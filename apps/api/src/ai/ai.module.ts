@@ -7,5 +7,6 @@ import { resolveAIProvider } from './resolve-provider.js';
 @Module({
   controllers: [AiController],
   providers: [AiService, { provide: AI_PROVIDER, useFactory: () => resolveAIProvider() }],
+  exports: [AI_PROVIDER],
 })
 export class AiModule {}

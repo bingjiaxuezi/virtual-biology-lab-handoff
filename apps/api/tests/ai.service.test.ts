@@ -17,6 +17,10 @@ class ScriptedProvider implements AIProvider {
     const output = this.outputs[Math.min(this.calls.length - 1, this.outputs.length - 1)];
     return structuredClone(output);
   }
+
+  async generateText(): Promise<string> {
+    throw new Error('not used');
+  }
 }
 
 function makePrisma(draft: unknown = templateDefinition()) {

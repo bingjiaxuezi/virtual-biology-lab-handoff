@@ -54,4 +54,15 @@ export const api = {
       body: JSON.stringify(command),
     }),
   getEvents: (runId: string) => request<RunEvent[]>(`/runs/${runId}/events`),
+  aiBriefing: (runId: string) =>
+    request<{ text: string }>(`/runs/${runId}/ai/briefing`, { method: 'POST' }),
+  aiHint: (runId: string) =>
+    request<{ text: string }>(`/runs/${runId}/ai/hint`, { method: 'POST' }),
+  aiObservationAssist: (runId: string, draftText: string) =>
+    request<{ suggestion: string }>(`/runs/${runId}/ai/observation-assist`, {
+      method: 'POST',
+      body: JSON.stringify({ draftText }),
+    }),
+  aiReview: (runId: string) =>
+    request<{ text: string }>(`/runs/${runId}/ai/review`, { method: 'POST' }),
 };

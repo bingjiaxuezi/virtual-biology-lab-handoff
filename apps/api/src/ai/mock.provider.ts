@@ -1,5 +1,5 @@
 import type { ExperimentDefinition } from '@virtual-biology-lab/experiment-schema';
-import type { AIProvider, StructuredGenerationRequest } from './provider.js';
+import type { AIProvider, StructuredGenerationRequest, TextGenerationRequest } from './provider.js';
 
 /**
  * Mock Provider：离线开发/测试默认。生成返回内置合法模板；
@@ -65,6 +65,24 @@ export class MockProvider implements AIProvider {
     }
 
     return next;
+  }
+
+  /** 确定性中文文案：引用上下文关键信息，便于离线开发与测试断言。 */
+  async generateText(request: TextGenerationRequest): Promise<string> {
+    const ctx = request.context ?? { usage: 'unknown' };
+    const vars = JSON.stringify(ctx.variables ?? {});
+    switch (ctx.usage) {
+      case 'briefing':
+        return `【实验导读】${String(ctx.title ?? '本实验')}：你将通过调整变量、观察现象来探究其中的科学原理。建议先浏览实验步骤，预测不同变量取值下的结果，再动手验证。`;
+      case 'hint':
+        return `【提示（${String(ctx.hintLevel ?? 'STANDARD')}）】你正在「${String(ctx.currentNodeId ?? '')}」节点。当前状态 ${vars}。想一想：改变哪个变量可能带来不同的结果？可以先小步调整再观察。`;
+      case 'observation-assist':
+        return `【观察建议】你的记录提到「${String(ctx.draftText ?? '')}」。可以补充：现象发生的时间、程度（如气泡多少/颜色深浅）、与预期的对比，以及你的初步解释。`;
+      case 'review':
+        return `【实验复盘】本次实验得分 ${String(ctx.score ?? 0)}，共记录 ${String(ctx.eventCount ?? 0)} 个事件。回顾你的变量设置与观察记录：结果是否符合预期？如果重做，你会改变哪一步？`;
+      default:
+        return '【AI】这是一个 Mock 响应。';
+    }
   }
 }
 

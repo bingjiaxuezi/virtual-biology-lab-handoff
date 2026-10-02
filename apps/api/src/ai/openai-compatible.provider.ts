@@ -1,4 +1,4 @@
-import type { AIProvider, StructuredGenerationRequest } from './provider.js';
+import type { AIProvider, StructuredGenerationRequest, TextGenerationRequest } from './provider.js';
 
 interface ChatCompletionResponse {
   choices?: { message?: { content?: string } }[];
@@ -46,5 +46,32 @@ export class OpenAICompatibleProvider implements AIProvider {
       throw new Error(`AI provider returned no content: ${body.error?.message ?? 'unknown'}`);
     }
     return JSON.parse(content) as unknown;
+  }
+
+  async generateText(request: TextGenerationRequest): Promise<string> {
+    const response = await fetch(`${this.baseUrl.replace(/\/$/, '')}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          { role: 'system', content: request.systemPrompt },
+          { role: 'user', content: request.userPrompt },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`AI provider request failed: ${response.status}`);
+    }
+    const body = (await response.json()) as ChatCompletionResponse;
+    const content = body.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error(`AI provider returned no content: ${body.error?.message ?? 'unknown'}`);
+    }
+    return content;
   }
 }

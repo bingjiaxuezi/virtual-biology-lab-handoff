@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api/client';
 import type { RunEvent, RunView, RuntimeCommand } from '../api/types';
-import { AiPlaceholder } from '../components/AiPlaceholder';
+import { AiAssistant } from '../components/AiAssistant';
 import { EventTrail } from '../components/EventTrail';
 import { getNodeRenderer } from '../nodes/registry';
 
@@ -100,11 +100,12 @@ export function RunPage() {
           state={run.state}
           busy={busy}
           onCommand={sendCommand}
+          ai={{ runId, observationAssistEnabled: definition.aiPolicy.observationAssist.enabled }}
         />
       </div>
       <div className="run-side">
         <EventTrail events={events} />
-        <AiPlaceholder />
+        <AiAssistant runId={runId} node={node} definition={definition} status={run.status} />
       </div>
     </div>
   );

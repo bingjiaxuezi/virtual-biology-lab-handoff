@@ -9,10 +9,20 @@ export interface StructuredGenerationRequest {
   context?: { currentDefinition?: unknown; instruction?: string } | undefined;
 }
 
+/** 文本生成请求（Student AI 四种 Usage 输出自然语言而非 JSON）。 */
+export interface TextGenerationRequest {
+  systemPrompt: string;
+  userPrompt: string;
+  /** 用途标识与只读上下文，Mock 等本地 Provider 直接消费。 */
+  context?: { usage: string; [key: string]: unknown } | undefined;
+}
+
 export interface AIProvider {
   readonly id: string;
   /** 结构化生成：返回解析后的 JSON 对象（未校验，校验由调用方的三层 Validator 负责）。 */
   generateStructured(request: StructuredGenerationRequest): Promise<unknown>;
+  /** 文本生成：返回自然语言文本。 */
+  generateText(request: TextGenerationRequest): Promise<string>;
 }
 
 export const AI_PROVIDER = Symbol('AI_PROVIDER');

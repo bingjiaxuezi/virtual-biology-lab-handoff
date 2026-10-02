@@ -254,7 +254,7 @@ button.primary:disabled {
 }
 
 .event-trail,
-.ai-placeholder {
+.ai-assistant {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -262,7 +262,7 @@ button.primary:disabled {
 }
 
 .event-trail h3,
-.ai-placeholder h3 {
+.ai-assistant h3 {
   font-size: 14px;
   margin: 0 0 10px;
 }
@@ -306,7 +306,36 @@ button.primary:disabled {
 }
 
 .event-empty,
-.ai-placeholder p {
+.ai-assistant p {
   font-size: 13px;
   color: var(--color-text-muted);
+}
+
+.ai-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.ai-text {
+  line-height: 1.6;
+}
+
+.ai-error {
+  font-size: 13px;
+  color: #b42318;
+}
+
+.ai-suggestion {
+  margin-top: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.ai-suggestion p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.6;
 }
