@@ -33,7 +33,8 @@ function defaultNodeCapabilities(): NodeCapability[] {
       version: REGISTRY_VERSION,
       description: '学生执行一个离散操作，例如“加入试剂”。',
       configSchema: actionNodeSchema.shape.config,
-      aiAuthoringHint: '用于需要学生主动操作的步骤，用 actionKind 描述操作语义。',
+      aiAuthoringHint:
+        '用于需要学生主动操作的步骤；config 必填 actionKind（描述操作语义，如 "加热试管"），description 可选。',
     },
     {
       type: 'VARIABLE_INPUT',
@@ -41,7 +42,7 @@ function defaultNodeCapabilities(): NodeCapability[] {
       description: '允许学生输入/调整一个已定义变量。',
       configSchema: variableInputNodeSchema.shape.config,
       aiAuthoringHint:
-        '当老师说“让学生自己调某个量”时使用；variableId 必须引用 variables 中已定义的变量，inputMode 按变量类型选择。',
+        '当老师说“让学生自己调某个量”时使用；config 必填 variableId（必须引用 variables 中已定义的变量）与 inputMode（按变量类型选择 SLIDER/NUMBER_INPUT/SELECT/TOGGLE）。',
     },
     {
       type: 'MEDIA',
@@ -49,21 +50,23 @@ function defaultNodeCapabilities(): NodeCapability[] {
       description: '展示实验结果或过程：VIDEO / IMAGE / TEXT。',
       configSchema: mediaNodeSchema.shape.config,
       aiAuthoringHint:
-        '用于呈现实验现象或结果；assetId 必须引用 assets 中已声明的资源，禁止直接写 URL。',
+        '用于呈现实验现象或结果；config 必填 assetId（必须引用 assets 中已声明的资源，禁止直接写 URL）与 mediaType（VIDEO/IMAGE/TEXT），caption 可选。',
     },
     {
       type: 'OBSERVATION',
       version: REGISTRY_VERSION,
       description: '学生填写实验观察记录。',
       configSchema: observationNodeSchema.shape.config,
-      aiAuthoringHint: '用于要求学生记录观察到的现象；观察文本是数据不是状态变量。',
+      aiAuthoringHint:
+        '用于要求学生记录观察到的现象；config 必填 prompt（引导学生观察什么的问题），placeholder 可选。观察文本是数据不是状态变量。',
     },
     {
       type: 'QUESTION',
       version: REGISTRY_VERSION,
       description: '结构化教学问题。',
       configSchema: questionNodeSchema.shape.config,
-      aiAuthoringHint: '用于插入思考题；可提供 options 作为选项，无 options 时为开放问答。',
+      aiAuthoringHint:
+        '用于插入思考题；config 必填 prompt（问题正文）；可提供 options 作为选项，无 options 时为开放问答。',
     },
     {
       type: 'CONDITION',
@@ -71,7 +74,7 @@ function defaultNodeCapabilities(): NodeCapability[] {
       description: '显示/表达条件判断；真正流程跳转由 Transition condition 控制。',
       configSchema: conditionNodeSchema.shape.config,
       aiAuthoringHint:
-        '仅用于在画布上显式呈现分支语义；实际跳转条件写在 Transition 上，不要依赖本节点控制流程。',
+        '仅用于在画布上显式呈现分支语义；config 必填 condition（{ variableId, operator, value }）。实际跳转条件写在 Transition 上，不要依赖本节点控制流程。',
     },
     {
       type: 'END',

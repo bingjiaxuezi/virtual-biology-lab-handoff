@@ -1,8 +1,12 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadGatewayException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AiService } from '../src/ai/ai.service.js';
 import { templateDefinition } from '../src/ai/mock.provider.js';
-import type { AIProvider, StructuredGenerationRequest } from '../src/ai/provider.js';
+import {
+  type AIProvider,
+  AiOutputParseError,
+  type StructuredGenerationRequest,
+} from '../src/ai/provider.js';
 
 vi.mock('@prisma/client', () => ({ PrismaClient: class {} }));
 
@@ -29,6 +33,24 @@ function makePrisma(draft: unknown = templateDefinition()) {
       findUnique: vi.fn().mockResolvedValue({ id: 'exp1', title: 't', draft }),
     },
   };
+}
+
+/** 前 failTimes 次抛 AiOutputParseError，之后返回正常输出的 Provider。 */
+class FlakyParseProvider extends ScriptedProvider {
+  constructor(
+    private readonly failTimes: number,
+    outputs: unknown[],
+  ) {
+    super(outputs);
+  }
+
+  override async generateStructured(request: StructuredGenerationRequest): Promise<unknown> {
+    if (this.calls.length < this.failTimes) {
+      this.calls.push(request);
+      throw new AiOutputParseError('AI 输出被截断');
+    }
+    return super.generateStructured(request);
+  }
 }
 
 function brokenTemplate(): Record<string, unknown> {
@@ -84,8 +106,28 @@ describe('AiService', () => {
 
   it('实验不存在：404', async () => {
     prisma.experiment.findUnique.mockResolvedValue(null);
-    const service = new AiService(prisma as never, new ScriptedProvider([]));
-    await expect(service.generate('missing', 'x')).rejects.toBeInstanceOf(NotFoundException);
+    const service404 = new AiService(prisma as never, new ScriptedProvider([]));
+    await expect(service404.generate('missing', 'x')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('输出截断（AiOutputParseError）：进入修复轮次后成功', async () => {
+    const provider = new FlakyParseProvider(1, [templateDefinition()]);
+    const service = new AiService(prisma as never, provider);
+
+    const proposal = await service.generate('exp1', '生成');
+
+    expect(proposal.needsReview).toBe(false);
+    expect(provider.calls).toHaveLength(2);
+    // 第二轮的 prompt 带着截断问题说明
+    expect(provider.calls[1]!.userPrompt).toContain('SCHEMA_INVALID');
+  });
+
+  it('输出持续无法解析：抛出 502 而非返回空提案', async () => {
+    const provider = new FlakyParseProvider(3, [templateDefinition()]);
+    const service = new AiService(prisma as never, provider);
+
+    await expect(service.generate('exp1', '生成')).rejects.toBeInstanceOf(BadGatewayException);
+    expect(provider.calls).toHaveLength(3);
   });
 
   it('change：返回服务端生成的变更摘要（不信 AI 自述）', async () => {

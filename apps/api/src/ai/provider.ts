@@ -26,3 +26,8 @@ export interface AIProvider {
 }
 
 export const AI_PROVIDER = Symbol('AI_PROVIDER');
+
+/** AI 输出的结构化结果无法解析（截断/非 JSON）。AiService 将其视为可修复的校验失败进入 Repair 轮次。 */
+export class AiOutputParseError extends Error {
+  override readonly name = 'AiOutputParseError';
+}

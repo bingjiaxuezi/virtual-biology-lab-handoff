@@ -1,7 +1,12 @@
-import type { AIProvider, StructuredGenerationRequest, TextGenerationRequest } from './provider.js';
+import {
+  type AIProvider,
+  AiOutputParseError,
+  type StructuredGenerationRequest,
+  type TextGenerationRequest,
+} from './provider.js';
 
 interface ChatCompletionResponse {
-  choices?: { message?: { content?: string } }[];
+  choices?: { message?: { content?: string }; finish_reason?: string }[];
   error?: { message?: string };
 }
 
@@ -13,6 +18,8 @@ export class OpenAICompatibleProvider implements AIProvider {
     private readonly baseUrl: string,
     private readonly apiKey: string,
     private readonly model: string,
+    /** 输出上限：完整 Experiment Definition 较大，DeepSeek 默认 4096 会截断，故默认 8192。 */
+    private readonly maxTokens = 8192,
   ) {}
 
   async generateStructured(request: StructuredGenerationRequest): Promise<unknown> {
@@ -24,6 +31,7 @@ export class OpenAICompatibleProvider implements AIProvider {
       },
       body: JSON.stringify({
         model: this.model,
+        max_tokens: this.maxTokens,
         messages: [
           { role: 'system', content: request.systemPrompt },
           {
@@ -41,11 +49,21 @@ export class OpenAICompatibleProvider implements AIProvider {
       throw new Error(`AI provider request failed: ${response.status}`);
     }
     const body = (await response.json()) as ChatCompletionResponse;
-    const content = body.choices?.[0]?.message?.content;
+    const choice = body.choices?.[0];
+    const content = choice?.message?.content;
     if (!content) {
       throw new Error(`AI provider returned no content: ${body.error?.message ?? 'unknown'}`);
     }
-    return JSON.parse(content) as unknown;
+    if (choice?.finish_reason === 'length') {
+      throw new AiOutputParseError(
+        `AI 输出被截断（达到 max_tokens=${this.maxTokens} 上限，已输出 ${content.length} 字符）`,
+      );
+    }
+    try {
+      return JSON.parse(content) as unknown;
+    } catch {
+      throw new AiOutputParseError(`AI 输出不是合法 JSON（长度 ${content.length} 字符）`);
+    }
   }
 
   async generateText(request: TextGenerationRequest): Promise<string> {
@@ -57,6 +75,7 @@ export class OpenAICompatibleProvider implements AIProvider {
       },
       body: JSON.stringify({
         model: this.model,
+        max_tokens: this.maxTokens,
         messages: [
           { role: 'system', content: request.systemPrompt },
           { role: 'user', content: request.userPrompt },
