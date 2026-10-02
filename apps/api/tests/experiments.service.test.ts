@@ -1,4 +1,4 @@
-import { UnprocessableEntityException } from '@nestjs/common';
+import { NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@prisma/client', () => ({ PrismaClient: class {} }));
@@ -25,6 +25,9 @@ function makePrisma() {
       findMany: vi.fn(),
     },
     experimentVersion: {
+      findMany: vi.fn(),
+    },
+    experimentRun: {
       findMany: vi.fn(),
     },
     $transaction: vi.fn(),
@@ -108,5 +111,44 @@ describe('ExperimentsService', () => {
       data: { experimentId: 'exp1', version: 1, definition: draft },
     });
     expect(result.version.version).toBe(1);
+  });
+
+  it('listRuns returns summaries across versions ordered by startedAt desc', async () => {
+    prisma.experiment.findUnique.mockResolvedValue({ id: 'exp1' });
+    prisma.experimentRun.findMany.mockResolvedValue([
+      {
+        id: 'run2',
+        studentId: 'stu_b',
+        status: 'COMPLETED',
+        state: { variables: {}, score: 10 },
+        startedAt: new Date('2026-10-02T02:00:00Z'),
+        completedAt: new Date('2026-10-02T02:05:00Z'),
+        experimentVersion: { version: 2 },
+      },
+      {
+        id: 'run1',
+        studentId: 'stu_a',
+        status: 'RUNNING',
+        state: { variables: { temp: 37 }, score: 0 },
+        startedAt: new Date('2026-10-02T01:00:00Z'),
+        completedAt: null,
+        experimentVersion: { version: 1 },
+      },
+    ]);
+
+    const result = await service.listRuns('exp1');
+    expect(prisma.experimentRun.findMany).toHaveBeenCalledWith({
+      where: { experimentVersion: { experimentId: 'exp1' } },
+      orderBy: { startedAt: 'desc' },
+      include: { experimentVersion: { select: { version: true } } },
+    });
+    expect(result[0]).toMatchObject({ runId: 'run2', version: 2, score: 10 });
+    expect(result[1]).toMatchObject({ runId: 'run1', version: 1, score: 0 });
+  });
+
+  it('listRuns throws 404 when the experiment does not exist', async () => {
+    prisma.experiment.findUnique.mockResolvedValue(null);
+    await expect(service.listRuns('missing')).rejects.toThrow(NotFoundException);
+    expect(prisma.experimentRun.findMany).not.toHaveBeenCalled();
   });
 });

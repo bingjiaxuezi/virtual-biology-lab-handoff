@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import type { ValidationIssue } from '@virtual-biology-lab/experiment-validator';
 import { validateExperiment } from '@virtual-biology-lab/experiment-validator';
@@ -105,6 +110,34 @@ export class ExperimentsService {
       where: { experimentId: id },
       orderBy: { version: 'desc' },
     });
+  }
+
+  /** 教师查看某实验全部已发布版本下的学生 Run 摘要（只读，按开始时间倒序）。 */
+  async listRuns(id: string) {
+    const experiment = await this.prisma.experiment.findUnique({ where: { id } });
+    if (!experiment) throw new NotFoundException(`Experiment "${id}" not found`);
+    const runs = await this.prisma.experimentRun.findMany({
+      where: { experimentVersion: { experimentId: id } },
+      orderBy: { startedAt: 'desc' },
+      include: { experimentVersion: { select: { version: true } } },
+    });
+    return runs.map((run) => ({
+      runId: run.id,
+      version: run.experimentVersion.version,
+      studentId: run.studentId,
+      status: run.status,
+      score: this.extractScore(run.state),
+      startedAt: run.startedAt,
+      completedAt: run.completedAt,
+    }));
+  }
+
+  private extractScore(state: Prisma.JsonValue): number | null {
+    if (state && typeof state === 'object' && !Array.isArray(state)) {
+      const score = (state as Record<string, unknown>).score;
+      if (typeof score === 'number') return score;
+    }
+    return null;
   }
 
   private validateDraft(draft: unknown): ValidationIssue[] {

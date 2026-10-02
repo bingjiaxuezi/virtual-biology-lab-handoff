@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
 import { z } from 'zod';
+import { Public } from '../auth/public.decorator.js';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 import { RunsService } from './runs.service.js';
 
@@ -24,21 +25,25 @@ const dispatchCommandSchema = z.discriminatedUnion('type', [
 export class RunsController {
   constructor(@Inject(RunsService) private readonly runs: RunsService) {}
 
+  @Public()
   @Post()
   create(@Body(new ZodValidationPipe(createRunSchema)) body: z.infer<typeof createRunSchema>) {
     return this.runs.create(body.experimentVersionId, body.studentId);
   }
 
+  @Public()
   @Get(':runId')
   get(@Param('runId') runId: string) {
     return this.runs.get(runId);
   }
 
+  @Public()
   @Post(':runId/start')
   start(@Param('runId') runId: string) {
     return this.runs.start(runId);
   }
 
+  @Public()
   @Post(':runId/dispatch')
   dispatch(
     @Param('runId') runId: string,
@@ -49,6 +54,7 @@ export class RunsController {
     return this.runs.dispatch(runId, command);
   }
 
+  @Public()
   @Post(':runId/abort')
   abort(@Param('runId') runId: string) {
     return this.runs.abort(runId);

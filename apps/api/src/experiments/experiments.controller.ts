@@ -54,4 +54,10 @@ export class ExperimentsController {
   versions(@Param('id') id: string) {
     return this.experiments.versions(id);
   }
+
+  /** 教师按实验查看学生 Run 列表（需认证，默认守卫生效）。 */
+  @Get(':id/runs')
+  runs(@Param('id') id: string) {
+    return this.experiments.listRuns(id);
+  }
 }

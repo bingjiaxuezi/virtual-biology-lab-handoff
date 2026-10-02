@@ -1,0 +1,37 @@
+{
+  "name": "@virtual-biology-lab/studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@virtual-biology-lab/experiment-events": "workspace:*",
+    "@virtual-biology-lab/experiment-runtime": "workspace:*",
+    "@virtual-biology-lab/experiment-schema": "workspace:*",
+    "@virtual-biology-lab/experiment-validator": "workspace:*",
+    "@xyflow/react": "catalog:",
+    "dagre": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@types/dagre": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "jsdom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

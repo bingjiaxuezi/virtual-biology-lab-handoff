@@ -1,4 +1,7 @@
-import { randomUUID } from 'node:crypto';
+/** 跨平台 UUID：浏览器/Node ≥19 都有 globalThis.crypto.randomUUID。 */
+function randomUUID(): string {
+  return globalThis.crypto.randomUUID();
+}
 import {
   type ExperimentEvent,
   type NewExperimentEvent,
