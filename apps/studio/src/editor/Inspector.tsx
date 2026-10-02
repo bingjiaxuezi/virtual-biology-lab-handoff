@@ -10,6 +10,7 @@ import { MEDIA_TYPE_LABEL, NODE_TYPE_LABEL } from './labels';
 /** 右侧属性面板：选中节点或连线时编辑其配置，写回 Definition。 */
 export function Inspector({
   definition,
+  assetFiles,
   selectedNode,
   selectedTransition,
   onUpdateNode,
@@ -18,6 +19,8 @@ export function Inspector({
   onRemoveTransition,
 }: {
   definition: ExperimentDefinition;
+  /** assetId → 服务端是否已有实体文件（MEDIA 节点提示用） */
+  assetFiles: Record<string, boolean>;
   selectedNode: ExperimentNode | null;
   selectedTransition: Transition | null;
   onUpdateNode: (node: ExperimentNode) => void;
@@ -29,6 +32,7 @@ export function Inspector({
     return (
       <NodeForm
         definition={definition}
+        assetFiles={assetFiles}
         node={selectedNode}
         onUpdate={onUpdateNode}
         onRemove={onRemoveNode}
@@ -60,11 +64,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function NodeForm({
   definition,
+  assetFiles,
   node,
   onUpdate,
   onRemove,
 }: {
   definition: ExperimentDefinition;
+  assetFiles: Record<string, boolean>;
   node: ExperimentNode;
   onUpdate: (node: ExperimentNode) => void;
   onRemove: (nodeId: string) => void;
@@ -162,6 +168,9 @@ function NodeForm({
               ))}
             </select>
           </Field>
+          {node.config.assetId && !assetFiles[node.config.assetId] && (
+            <p className="panel-hint error">该资源尚未上传实体文件，请先在「资源」面板上传。</p>
+          )}
           <Field label="媒体类型">
             <select
               value={node.config.mediaType}

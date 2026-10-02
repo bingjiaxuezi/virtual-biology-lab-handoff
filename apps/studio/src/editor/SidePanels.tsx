@@ -4,6 +4,8 @@ import type {
   Rule,
   RuleEffect,
 } from '@virtual-biology-lab/experiment-schema';
+import { useRef, useState } from 'react';
+import { api } from '../api/client';
 import { ConditionEditor } from './ConditionEditor';
 import { EFFECT_LABEL } from './labels';
 
@@ -300,10 +302,46 @@ export function RulesPanel({
 export function AssetsPanel({
   definition,
   onChange,
+  assetFiles,
+  onAssetsChanged,
 }: {
   definition: ExperimentDefinition;
   onChange: (next: ExperimentDefinition) => void;
+  /** assetId → 服务端是否已有实体文件 */
+  assetFiles: Record<string, boolean>;
+  onAssetsChanged: () => void;
 }) {
+  const [uploadType, setUploadType] = useState<'IMAGE' | 'VIDEO' | 'TEXT'>('IMAGE');
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const doUpload = async (file: File) => {
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const record = await api.uploadAsset(file, uploadType, file.name);
+      onChange({
+        ...definition,
+        assets: [
+          ...definition.assets,
+          {
+            id: `asset-row-${definition.assets.length + 1}`,
+            assetId: record.assetId,
+            type: uploadType,
+            name: record.name ?? file.name,
+          },
+        ],
+      });
+      onAssetsChanged();
+    } catch (cause) {
+      setUploadError(cause instanceof Error ? cause.message : '上传失败');
+    } finally {
+      setUploading(false);
+      if (fileInput.current) fileInput.current.value = '';
+    }
+  };
+
   const add = () =>
     onChange({
       ...definition,
@@ -315,6 +353,39 @@ export function AssetsPanel({
 
   return (
     <div className="side-panel">
+      <div className="panel-card">
+        <div className="panel-card-row">
+          <input
+            ref={fileInput}
+            type="file"
+            accept={
+              uploadType === 'IMAGE'
+                ? 'image/png,image/jpeg,image/webp,image/gif'
+                : uploadType === 'VIDEO'
+                  ? 'video/mp4,video/webm'
+                  : 'text/plain,text/markdown'
+            }
+            aria-label="选择素材文件"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void doUpload(file);
+            }}
+          />
+          <select
+            value={uploadType}
+            aria-label="素材类型"
+            onChange={(e) => setUploadType(e.target.value as 'IMAGE' | 'VIDEO' | 'TEXT')}
+          >
+            <option value="IMAGE">图片</option>
+            <option value="VIDEO">视频</option>
+            <option value="TEXT">文本</option>
+          </select>
+        </div>
+        <p className="panel-hint">
+          {uploading ? '上传中……' : '选择文件即上传（≤50MB），assetId 由服务端生成并自动填入下表。'}
+        </p>
+        {uploadError && <p className="panel-hint error">{uploadError}</p>}
+      </div>
       <div className="panel-actions">
         <button type="button" onClick={add}>
           + 资源引用
@@ -323,6 +394,13 @@ export function AssetsPanel({
       <p className="panel-hint">只登记 assetId 逻辑引用，禁止填写任何 URL。</p>
       {definition.assets.map((asset) => (
         <div key={asset.id} className="panel-card">
+          <div className="panel-card-row">
+            {asset.assetId && (
+              <span className={`tag ${assetFiles[asset.assetId] ? '' : 'warn'}`}>
+                {assetFiles[asset.assetId] ? '已上传文件' : '未上传文件'}
+              </span>
+            )}
+          </div>
           <div className="panel-card-row">
             <input
               value={asset.assetId}

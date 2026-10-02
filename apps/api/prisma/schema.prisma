@@ -68,6 +68,10 @@ model Asset {
   type      String
   name      String?
   metadata  Json?
+  /// 实体文件的存储位置；为空表示仅登记元数据、尚未上传文件
+  storageKey String?
+  mimeType   String?
+  sizeBytes  Int?
   createdAt DateTime @default(now())
 }
 

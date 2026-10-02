@@ -87,9 +87,9 @@ describe('node renderers', () => {
     );
   });
 
-  it('MEDIA renders asset placeholder card with caption', () => {
+  it('MEDIA 有声明资源时渲染真实媒体（video 指向内容端点）', () => {
     const onCommand = vi.fn().mockResolvedValue(true);
-    renderNode(
+    const { container } = renderNode(
       <MediaNodeView
         node={nodeById('normal_media')}
         definition={definition}
@@ -98,7 +98,44 @@ describe('node renderers', () => {
         onCommand={onCommand}
       />,
     );
+    const video = container.querySelector('video');
+    expect(video).not.toBeNull();
+    expect(video!.getAttribute('src')).toContain('/api/assets/asset_normal_video/content');
+  });
+
+  it('MEDIA 加载失败降级为占位卡片', () => {
+    const onCommand = vi.fn().mockResolvedValue(true);
+    const { container } = renderNode(
+      <MediaNodeView
+        node={nodeById('normal_media')}
+        definition={definition}
+        state={state}
+        busy={false}
+        onCommand={onCommand}
+      />,
+    );
+    fireEvent.error(container.querySelector('video')!);
     expect(screen.getByText('视频')).toBeInTheDocument();
+    expect(screen.getByText(/未上传文件/)).toBeInTheDocument();
+  });
+
+  it('MEDIA 未声明的资源直接降级占位卡片', () => {
+    const onCommand = vi.fn().mockResolvedValue(true);
+    const ghost = {
+      id: 'ghost_media',
+      type: 'MEDIA' as const,
+      config: { assetId: 'asset_ghost', mediaType: 'IMAGE' as const },
+    };
+    renderNode(
+      <MediaNodeView
+        node={ghost}
+        definition={definition}
+        state={state}
+        busy={false}
+        onCommand={onCommand}
+      />,
+    );
+    expect(screen.getByText(/未在 assets 中声明/)).toBeInTheDocument();
   });
 
   it('OBSERVATION submits non-empty text only', async () => {

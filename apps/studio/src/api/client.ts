@@ -1,5 +1,6 @@
 import type {
   AiProposal,
+  AssetRecord,
   DraftSaveResult,
   ExperimentRecord,
   PublishResult,
@@ -62,6 +63,29 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
+/** multipart 上传：不能用 request() 的 JSON Content-Type。 */
+async function upload<T>(path: string, form: FormData): Promise<T> {
+  const headers: Record<string, string> = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const response = await fetch(`${BASE}${path}`, { method: 'POST', headers, body: form });
+  if (!response.ok) {
+    if (response.status === 401) {
+      setToken(null);
+      onUnauthorized?.();
+    }
+    let message = `上传失败（${response.status}）`;
+    try {
+      const body = (await response.json()) as { message?: string };
+      if (typeof body.message === 'string') message = body.message;
+    } catch {
+      // 保留默认错误信息
+    }
+    throw new ApiError(response.status, message);
+  }
+  return (await response.json()) as T;
+}
+
 export const api = {
   register: (username: string, password: string) =>
     request<{ token: string }>('/auth/register', {
@@ -102,4 +126,14 @@ export const api = {
       body: JSON.stringify({ instruction }),
     }),
   getRunEvents: (runId: string) => request<TrailEvent[]>(`/runs/${runId}/events`),
+
+  /** 资源库：服务端登记的素材（含是否已有实体文件）。 */
+  listAssets: () => request<AssetRecord[]>('/assets'),
+  uploadAsset: (file: File, type: 'IMAGE' | 'VIDEO' | 'TEXT', name?: string) => {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('type', type);
+    if (name) form.append('name', name);
+    return upload<AssetRecord>('/assets/upload', form);
+  },
 };

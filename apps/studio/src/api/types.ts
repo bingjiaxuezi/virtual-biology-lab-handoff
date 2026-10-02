@@ -7,6 +7,16 @@ export interface VersionSummary {
   publishedAt: string;
 }
 
+/** 服务端资源库条目；storageKey 非空表示已有实体文件。 */
+export interface AssetRecord {
+  assetId: string;
+  type: string;
+  name?: string | null;
+  storageKey?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+}
+
 export interface ExperimentRecord {
   id: string;
   title: string;

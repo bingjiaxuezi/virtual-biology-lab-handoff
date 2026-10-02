@@ -5,3 +5,4 @@ coverage/
 .DS_Store
 .env
 apps/api/src/generated/
+apps/api/storage/

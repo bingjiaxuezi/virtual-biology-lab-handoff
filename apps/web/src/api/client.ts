@@ -66,3 +66,16 @@ export const api = {
   aiReview: (runId: string) =>
     request<{ text: string }>(`/runs/${runId}/ai/review`, { method: 'POST' }),
 };
+
+/** 素材内容地址（<img>/<video> 直接引用）；无文件时服务端返回 404。 */
+export function assetContentUrl(assetId: string): string {
+  return `${BASE}/assets/${encodeURIComponent(assetId)}/content`;
+}
+
+/** 拉取文本素材内容；无文件返回 null。 */
+export async function fetchAssetText(assetId: string): Promise<string | null> {
+  const response = await fetch(assetContentUrl(assetId));
+  if (response.status === 404) return null;
+  if (!response.ok) throw new ApiError(response.status, `素材加载失败（${response.status}）`);
+  return response.text();
+}

@@ -53,6 +53,8 @@ function EditorInner() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
   const idCounter = useRef(1);
+  // assetId → 服务端是否已有实体文件（驱动「未上传文件」标记）
+  const [assetFiles, setAssetFiles] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     api
@@ -65,6 +67,19 @@ function EditorInner() {
       })
       .catch((e: unknown) => setLoadError(e instanceof Error ? e.message : String(e)));
   }, [id]);
+
+  const refreshAssetFiles = useCallback(() => {
+    api
+      .listAssets()
+      .then((records) => {
+        setAssetFiles(Object.fromEntries(records.map((r) => [r.assetId, Boolean(r.storageKey)])));
+      })
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    refreshAssetFiles();
+  }, [refreshAssetFiles]);
 
   const issues = useMemo(
     () => (definition ? validateExperiment(definition).issues : []),
@@ -298,6 +313,7 @@ function EditorInner() {
           {tab === 'inspector' && (
             <Inspector
               definition={definition}
+              assetFiles={assetFiles}
               selectedNode={selectedNode}
               selectedTransition={selectedTransition}
               onUpdateNode={(node) => apply(updateNode(definition, node.id, node))}
@@ -314,7 +330,14 @@ function EditorInner() {
           )}
           {tab === 'variables' && <VariablesPanel definition={definition} onChange={apply} />}
           {tab === 'rules' && <RulesPanel definition={definition} onChange={apply} />}
-          {tab === 'assets' && <AssetsPanel definition={definition} onChange={apply} />}
+          {tab === 'assets' && (
+            <AssetsPanel
+              definition={definition}
+              onChange={apply}
+              assetFiles={assetFiles}
+              onAssetsChanged={refreshAssetFiles}
+            />
+          )}
           {tab === 'issues' && (
             <ValidationPanel definition={definition} issues={issues} onLocate={locateNode} />
           )}
