@@ -222,7 +222,11 @@ export function createExperimentRuntime(options: {
       ),
     );
 
-    const { state: finalState, steps } = evaluateRules(record.definition, afterSet);
+    const { state: finalState, steps } = evaluateRules(
+      record.definition,
+      afterSet,
+      command.variableId,
+    );
     for (const step of steps) {
       events.push(
         await emit(

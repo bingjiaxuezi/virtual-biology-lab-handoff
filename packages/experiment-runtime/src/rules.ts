@@ -54,16 +54,19 @@ function diffVariables(before: RunState, after: RunState): VariableChange[] {
 /**
  * 单遍规则求值：按 Definition 声明顺序，对逐步演进中的 State 判断 when；
  * 命中的 Rule 依次应用其 effects。v0.1 不做不动点迭代（无规则链）。
+ * 传入 changedVariableId 时，只求值 when 引用该变量的 Rule，避免无关变量变化导致重复计分。
  */
 export function evaluateRules(
   definition: ExperimentDefinition,
   initialState: RunState,
+  changedVariableId?: string,
 ): { state: RunState; steps: AppliedRuleStep[] } {
   const variableDefs = new Map(definition.variables.map((v) => [v.id, v]));
   let state = initialState;
   const steps: AppliedRuleStep[] = [];
 
   for (const rule of definition.rules) {
+    if (changedVariableId !== undefined && rule.when.variableId !== changedVariableId) continue;
     if (!evaluateCondition(rule.when, state.variables, variableDefs)) continue;
     let next = state;
     for (const effect of rule.effects) {

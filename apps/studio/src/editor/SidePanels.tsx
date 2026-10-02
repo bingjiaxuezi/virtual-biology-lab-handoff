@@ -382,7 +382,9 @@ export function AssetsPanel({
           </select>
         </div>
         <p className="panel-hint">
-          {uploading ? '上传中……' : '选择文件即上传（≤50MB），assetId 由服务端生成并自动填入下表。'}
+          {uploading
+            ? '上传中……'
+            : '选择文件即上传（默认 ≤200MB，服务端可用 ASSET_MAX_UPLOAD_MB 调整），assetId 由服务端生成并自动填入下表。'}
         </p>
         {uploadError && <p className="panel-hint error">{uploadError}</p>}
       </div>

@@ -16,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { z } from 'zod';
 import { Public } from '../auth/public.decorator.js';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
+import { resolveMaxUploadBytes } from './assets.config.js';
 import { AssetsService, type UploadedFilePayload } from './assets.service.js';
 
 /** passthrough 模式下只需 setHeader（避免仅为类型引入 @types/express）。 */
@@ -31,8 +32,8 @@ const registerAssetSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
-/** 上传大小上限：50MB。 */
-const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+/** 上传大小上限：ASSET_MAX_UPLOAD_MB（MB，默认 200），模块加载时读取。 */
+const MAX_UPLOAD_BYTES = resolveMaxUploadBytes();
 
 @Controller('assets')
 export class AssetsController {

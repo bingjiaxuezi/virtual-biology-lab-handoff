@@ -1,0 +1,794 @@
+{
+  "schemaVersion": "0.1",
+  "id": "macrophage-phagocytosis",
+  "version": 1,
+  "metadata": {
+    "title": "小鼠腹腔巨噬细胞吞噬鸡红细胞实验",
+    "description": "通过交互式视频还原经典吞噬实验与荧光微球定量实验，在关键操作点做出选择并观察正误结果，理解巨噬细胞吞噬作用的实验设计与规范操作。",
+    "author": "生物实验教学组",
+    "subject": "免疫学/细胞生物学",
+    "gradeLevel": "大学",
+    "tags": ["巨噬细胞", "吞噬作用", "鸡红细胞", "荧光微球", "交互式视频"]
+  },
+  "teaching": {
+    "objectives": [
+      "掌握小鼠抓取、腹腔注射、解剖取液的规范操作",
+      "理解染色、盖片、镜检的正确方法与常见错误",
+      "能辨认被吞噬的鸡红细胞并描述吞噬现象",
+      "了解荧光微球定量吞噬实验的流程与结果判读"
+    ],
+    "prerequisites": ["巨噬细胞与吞噬作用的基本概念", "显微镜的基本使用"],
+    "durationMinutes": 40
+  },
+  "variables": [
+    {
+      "id": "grip_site",
+      "name": "抓取小鼠的部位",
+      "type": "ENUM",
+      "options": ["前臂后侧皮肤", "背部皮肤", "颈后（头后侧）皮肤"],
+      "defaultValue": "前臂后侧皮肤"
+    },
+    {
+      "id": "dissect_tools",
+      "name": "解剖器械选择",
+      "type": "ENUM",
+      "options": ["只选剪刀", "只选镊子", "剪刀和镊子"],
+      "defaultValue": "只选剪刀"
+    },
+    {
+      "id": "stain_amount",
+      "name": "染色液用量",
+      "type": "ENUM",
+      "options": ["超大滴", "大滴", "适中一滴"],
+      "defaultValue": "超大滴"
+    },
+    {
+      "id": "coverslip_method",
+      "name": "盖片方式",
+      "type": "ENUM",
+      "options": ["大滴染色只用盖玻片", "先推片再盖玻片", "染色适中后直接盖片"],
+      "defaultValue": "大滴染色只用盖玻片"
+    },
+    {
+      "id": "lens_choice",
+      "name": "物镜选择",
+      "type": "ENUM",
+      "options": ["直接使用高倍镜", "先低倍镜再高倍镜"],
+      "defaultValue": "直接使用高倍镜"
+    },
+    {
+      "id": "phagocytosed_cell",
+      "name": "被吞噬的鸡红细胞是哪一个",
+      "type": "ENUM",
+      "options": ["细胞外游离的鸡红细胞", "深蓝色的巨噬细胞核", "被吞入巨噬细胞内的鸡红细胞"],
+      "defaultValue": "细胞外游离的鸡红细胞"
+    },
+    {
+      "id": "scene_choice",
+      "name": "实验场景",
+      "type": "ENUM",
+      "options": ["荧光微球定量吞噬实验"],
+      "defaultValue": "荧光微球定量吞噬实验"
+    },
+    {
+      "id": "keep_component",
+      "name": "离心后保留的成分",
+      "type": "ENUM",
+      "options": ["上清液", "细胞沉淀"],
+      "defaultValue": "上清液"
+    },
+    {
+      "id": "pbs_site",
+      "name": "加入 PBS 的部位",
+      "type": "ENUM",
+      "options": ["直接滴加在细胞上", "沿孔壁缓慢加入"],
+      "defaultValue": "直接滴加在细胞上"
+    },
+    {
+      "id": "keep_part",
+      "name": "二次离心后保留的部分",
+      "type": "ENUM",
+      "options": ["上清液", "细胞沉淀"],
+      "defaultValue": "上清液"
+    }
+  ],
+  "assets": [
+    { "id": "asset_0108e4b3fd50", "assetId": "asset_0108e4b3fd50", "type": "VIDEO", "name": "实验用品展示" },
+    { "id": "asset_b303c6236acd", "assetId": "asset_b303c6236acd", "type": "VIDEO", "name": "抓老鼠选点引导" },
+    { "id": "asset_d4993ddd1332", "assetId": "asset_d4993ddd1332", "type": "VIDEO", "name": "抓背部（不合适）" },
+    { "id": "asset_776fdd183839", "assetId": "asset_776fdd183839", "type": "VIDEO", "name": "抓前臂后侧皮肤（错误）" },
+    { "id": "asset_9fb1f366a772", "assetId": "asset_9fb1f366a772", "type": "VIDEO", "name": "抓头后侧皮肤（正确）" },
+    { "id": "asset_d857b7384202", "assetId": "asset_d857b7384202", "type": "VIDEO", "name": "腹腔注射无菌淀粉溶液" },
+    { "id": "asset_49d2678c1adb", "assetId": "asset_49d2678c1adb", "type": "VIDEO", "name": "注射鸡红细胞" },
+    { "id": "asset_e14aa274b1cf", "assetId": "asset_e14aa274b1cf", "type": "VIDEO", "name": "轻柔腹部" },
+    { "id": "asset_b5824caa842b", "assetId": "asset_b5824caa842b", "type": "VIDEO", "name": "处死小鼠" },
+    { "id": "asset_7e276d4f09c0", "assetId": "asset_7e276d4f09c0", "type": "VIDEO", "name": "固定小鼠" },
+    { "id": "asset_77f4509b0961", "assetId": "asset_77f4509b0961", "type": "VIDEO", "name": "解剖前的选择" },
+    { "id": "asset_221f621a6ba3", "assetId": "asset_221f621a6ba3", "type": "VIDEO", "name": "只选剪刀（错误）" },
+    { "id": "asset_676a63d94955", "assetId": "asset_676a63d94955", "type": "VIDEO", "name": "只选镊子（错误）" },
+    { "id": "asset_465557cbfb7c", "assetId": "asset_465557cbfb7c", "type": "VIDEO", "name": "解剖正确" },
+    { "id": "asset_bd68c5683dd3", "assetId": "asset_bd68c5683dd3", "type": "VIDEO", "name": "吸取腹腔液，滴片" },
+    { "id": "asset_e55de248f132", "assetId": "asset_e55de248f132", "type": "VIDEO", "name": "超大滴染色（错误）" },
+    { "id": "asset_f6456c27a000", "assetId": "asset_f6456c27a000", "type": "VIDEO", "name": "大滴染色（错误）" },
+    { "id": "asset_1186eff17a22", "assetId": "asset_1186eff17a22", "type": "VIDEO", "name": "染色适中（正确）" },
+    { "id": "asset_42a6a5f0ad80", "assetId": "asset_42a6a5f0ad80", "type": "VIDEO", "name": "盖玻片时选择" },
+    { "id": "asset_1451de9b2d2a", "assetId": "asset_1451de9b2d2a", "type": "VIDEO", "name": "大滴染色只用盖玻片（错误）" },
+    { "id": "asset_9d9355244ddf", "assetId": "asset_9d9355244ddf", "type": "VIDEO", "name": "先推片再盖玻片（错误）" },
+    { "id": "asset_d85aceb6406b", "assetId": "asset_d85aceb6406b", "type": "VIDEO", "name": "正确盖玻片直接盖" },
+    { "id": "asset_44d298215dcd", "assetId": "asset_44d298215dcd", "type": "VIDEO", "name": "选择低倍镜还是高倍镜" },
+    { "id": "asset_72741437212a", "assetId": "asset_72741437212a", "type": "VIDEO", "name": "直接高倍镜（错误）" },
+    { "id": "asset_f260dc47ee8d", "assetId": "asset_f260dc47ee8d", "type": "VIDEO", "name": "先低倍镜再高倍镜（正确）" },
+    { "id": "asset_4884d5b35a49", "assetId": "asset_4884d5b35a49", "type": "VIDEO", "name": "判断谁是被吞噬的鸡红细胞" },
+    { "id": "asset_58ae57cf7b39", "assetId": "asset_58ae57cf7b39", "type": "VIDEO", "name": "判断错误（老师提醒）" },
+    { "id": "asset_6f07db0c5544", "assetId": "asset_6f07db0c5544", "type": "VIDEO", "name": "选择实验场景" },
+    { "id": "asset_b631712c8141", "assetId": "asset_b631712c8141", "type": "VIDEO", "name": "孵育荧光微球" },
+    { "id": "asset_e8b3cfa4da03", "assetId": "asset_e8b3cfa4da03", "type": "VIDEO", "name": "加 FBS 入 EP 管" },
+    { "id": "asset_27de206796ce", "assetId": "asset_27de206796ce", "type": "VIDEO", "name": "血清洗涤巨噬细胞" },
+    { "id": "asset_2c914223b05b", "assetId": "asset_2c914223b05b", "type": "VIDEO", "name": "加入生理盐水吸取腹腔液" },
+    { "id": "asset_ca2b0d1e4d1a", "assetId": "asset_ca2b0d1e4d1a", "type": "VIDEO", "name": "二次冲洗收集巨噬细胞" },
+    { "id": "asset_ef3cba659458", "assetId": "asset_ef3cba659458", "type": "VIDEO", "name": "配平离心" },
+    { "id": "asset_b05eb39147c2", "assetId": "asset_b05eb39147c2", "type": "VIDEO", "name": "选择要保留的成分" },
+    { "id": "asset_7a54496eda23", "assetId": "asset_7a54496eda23", "type": "VIDEO", "name": "巨噬细胞加入鸡红细胞" },
+    { "id": "asset_050dea10a9aa", "assetId": "asset_050dea10a9aa", "type": "VIDEO", "name": "选择加入 PBS 的部位" },
+    { "id": "asset_03c4ea3765b2", "assetId": "asset_03c4ea3765b2", "type": "VIDEO", "name": "加入十六孔板" },
+    { "id": "asset_5d02e0521de3", "assetId": "asset_5d02e0521de3", "type": "VIDEO", "name": "孵育结束，荧光微球加入十六孔板" },
+    { "id": "asset_74789bda1174", "assetId": "asset_74789bda1174", "type": "VIDEO", "name": "选择需要保留的部分" },
+    { "id": "asset_f068ff7ad464", "assetId": "asset_f068ff7ad464", "type": "VIDEO", "name": "六孔板加入巨噬细胞" },
+    { "id": "asset_e9f71672222d", "assetId": "asset_e9f71672222d", "type": "VIDEO", "name": "全培养基重悬" },
+    { "id": "asset_b8967c91abf2", "assetId": "asset_b8967c91abf2", "type": "IMAGE", "name": "镜检视野：只有巨噬细胞" },
+    { "id": "asset_c02e1cf3f702", "assetId": "asset_c02e1cf3f702", "type": "IMAGE", "name": "镜检视野：有杂质" },
+    { "id": "asset_bde7d766a777", "assetId": "asset_bde7d766a777", "type": "IMAGE", "name": "正确阳性对照" },
+    { "id": "asset_39dfde343f9e", "assetId": "asset_39dfde343f9e", "type": "IMAGE", "name": "阴性对照只有微球" }
+  ],
+  "nodes": [
+    { "id": "start", "type": "START", "label": "实验开始" },
+    {
+      "id": "q_intro",
+      "type": "QUESTION",
+      "label": "实验前思考",
+      "config": {
+        "prompt": "巨噬细胞如何识别并清除外来颗粒？吞噬作用一般包含哪几个环节？",
+        "options": ["黏附-吞入-消化", "直接裂解", "分泌抗体中和"]
+      }
+    },
+    {
+      "id": "media_supplies",
+      "type": "MEDIA",
+      "label": "观看：实验用品展示",
+      "config": { "assetId": "asset_0108e4b3fd50", "mediaType": "VIDEO", "caption": "认识本实验所需器材与试剂" }
+    },
+    {
+      "id": "act_supplies",
+      "type": "ACTION",
+      "label": "清点实验用品",
+      "config": { "actionKind": "清点用品", "description": "核对注射器、淀粉溶液、鸡红细胞悬液、解剖器械、染色液、载玻片与盖玻片等。" }
+    },
+    {
+      "id": "media_grip_guide",
+      "type": "MEDIA",
+      "label": "观看：抓取部位选择引导",
+      "config": { "assetId": "asset_b303c6236acd", "mediaType": "VIDEO", "caption": "抓取小鼠时可以选择的部位" }
+    },
+    {
+      "id": "input_grip",
+      "type": "VARIABLE_INPUT",
+      "label": "选择抓取部位",
+      "config": { "variableId": "grip_site", "inputMode": "SELECT" }
+    },
+    {
+      "id": "cond_grip",
+      "type": "CONDITION",
+      "label": "判断抓取部位",
+      "config": { "condition": { "variableId": "grip_site", "operator": "EQ", "value": "颈后（头后侧）皮肤" } }
+    },
+    {
+      "id": "media_grip_neck",
+      "type": "MEDIA",
+      "label": "结果：颈后（头后侧）皮肤",
+      "config": { "assetId": "asset_9fb1f366a772", "mediaType": "VIDEO", "caption": "正确：固定牢固，小鼠不易挣扎回头咬人" }
+    },
+    {
+      "id": "media_grip_forearm",
+      "type": "MEDIA",
+      "label": "结果：前臂后侧皮肤",
+      "config": { "assetId": "asset_776fdd183839", "mediaType": "VIDEO", "caption": "错误：固定不牢，容易挣脱" }
+    },
+    {
+      "id": "media_grip_back",
+      "type": "MEDIA",
+      "label": "结果：背部皮肤",
+      "config": { "assetId": "asset_d4993ddd1332", "mediaType": "VIDEO", "caption": "不合适：无法可靠固定头部" }
+    },
+    {
+      "id": "media_starch",
+      "type": "MEDIA",
+      "label": "观看：腹腔注射无菌淀粉溶液",
+      "config": { "assetId": "asset_d857b7384202", "mediaType": "VIDEO", "caption": "诱导巨噬细胞向腹腔聚集" }
+    },
+    {
+      "id": "act_starch",
+      "type": "ACTION",
+      "label": "腹腔注射淀粉溶液",
+      "config": { "actionKind": "腹腔注射", "description": "腹腔注射无菌淀粉溶液，诱导巨噬细胞聚集。" }
+    },
+    {
+      "id": "media_rbc",
+      "type": "MEDIA",
+      "label": "观看：注射鸡红细胞",
+      "config": { "assetId": "asset_49d2678c1adb", "mediaType": "VIDEO", "caption": "注入鸡红细胞作为吞噬对象" }
+    },
+    {
+      "id": "act_rbc",
+      "type": "ACTION",
+      "label": "注射鸡红细胞",
+      "config": { "actionKind": "腹腔注射", "description": "腹腔注射鸡红细胞悬液。" }
+    },
+    {
+      "id": "media_massage",
+      "type": "MEDIA",
+      "label": "观看：轻柔腹部",
+      "config": { "assetId": "asset_e14aa274b1cf", "mediaType": "VIDEO", "caption": "使鸡红细胞在腹腔内分布均匀" }
+    },
+    {
+      "id": "act_massage",
+      "type": "ACTION",
+      "label": "轻柔腹部",
+      "config": { "actionKind": "轻柔按摩", "description": "轻柔按摩腹部，使悬液混匀。" }
+    },
+    {
+      "id": "media_sacrifice",
+      "type": "MEDIA",
+      "label": "观看：处死小鼠",
+      "config": { "assetId": "asset_b5824caa842b", "mediaType": "VIDEO", "caption": "规范处死，减少动物痛苦" }
+    },
+    {
+      "id": "act_sacrifice",
+      "type": "ACTION",
+      "label": "处死小鼠",
+      "config": { "actionKind": "处死", "description": "颈椎脱臼法处死小鼠。" }
+    },
+    {
+      "id": "media_fix",
+      "type": "MEDIA",
+      "label": "观看：固定小鼠",
+      "config": { "assetId": "asset_7e276d4f09c0", "mediaType": "VIDEO", "caption": "固定于解剖台，暴露腹部" }
+    },
+    {
+      "id": "act_fix",
+      "type": "ACTION",
+      "label": "固定小鼠",
+      "config": { "actionKind": "固定", "description": "将小鼠仰卧固定于解剖台。" }
+    },
+    {
+      "id": "media_dissect_guide",
+      "type": "MEDIA",
+      "label": "观看：解剖前的选择",
+      "config": { "assetId": "asset_77f4509b0961", "mediaType": "VIDEO", "caption": "解剖需要哪些器械？" }
+    },
+    {
+      "id": "input_tools",
+      "type": "VARIABLE_INPUT",
+      "label": "选择解剖器械",
+      "config": { "variableId": "dissect_tools", "inputMode": "SELECT" }
+    },
+    {
+      "id": "cond_tools",
+      "type": "CONDITION",
+      "label": "判断器械选择",
+      "config": { "condition": { "variableId": "dissect_tools", "operator": "EQ", "value": "剪刀和镊子" } }
+    },
+    {
+      "id": "media_tools_both",
+      "type": "MEDIA",
+      "label": "结果：剪刀和镊子",
+      "config": { "assetId": "asset_465557cbfb7c", "mediaType": "VIDEO", "caption": "正确：剪开皮肤与腹膜需要两者配合" }
+    },
+    {
+      "id": "media_tools_scissor",
+      "type": "MEDIA",
+      "label": "结果：只选剪刀",
+      "config": { "assetId": "asset_221f621a6ba3", "mediaType": "VIDEO", "caption": "错误：缺少镊子无法夹持组织" }
+    },
+    {
+      "id": "media_tools_forceps",
+      "type": "MEDIA",
+      "label": "结果：只选镊子",
+      "config": { "assetId": "asset_676a63d94955", "mediaType": "VIDEO", "caption": "错误：缺少剪刀无法剪开" }
+    },
+    {
+      "id": "media_drip",
+      "type": "MEDIA",
+      "label": "观看：吸取腹腔液，滴片",
+      "config": { "assetId": "asset_bd68c5683dd3", "mediaType": "VIDEO", "caption": "吸取腹腔液滴于载玻片" }
+    },
+    {
+      "id": "act_drip",
+      "type": "ACTION",
+      "label": "吸取腹腔液并滴片",
+      "config": { "actionKind": "滴片", "description": "吸取腹腔液，滴加在载玻片上准备染色。" }
+    },
+    {
+      "id": "input_stain",
+      "type": "VARIABLE_INPUT",
+      "label": "选择染色液用量",
+      "config": { "variableId": "stain_amount", "inputMode": "SELECT" }
+    },
+    {
+      "id": "cond_stain",
+      "type": "CONDITION",
+      "label": "判断染色用量",
+      "config": { "condition": { "variableId": "stain_amount", "operator": "EQ", "value": "适中一滴" } }
+    },
+    {
+      "id": "media_stain_ok",
+      "type": "MEDIA",
+      "label": "结果：染色适中",
+      "config": { "assetId": "asset_1186eff17a22", "mediaType": "VIDEO", "caption": "正确：用量适中，染色效果最佳" }
+    },
+    {
+      "id": "media_stain_xl",
+      "type": "MEDIA",
+      "label": "结果：超大滴",
+      "config": { "assetId": "asset_e55de248f132", "mediaType": "VIDEO", "caption": "错误：染料过多，视野全被染料覆盖" }
+    },
+    {
+      "id": "media_stain_l",
+      "type": "MEDIA",
+      "label": "结果：大滴",
+      "config": { "assetId": "asset_f6456c27a000", "mediaType": "VIDEO", "caption": "错误：仍然偏多，影响观察" }
+    },
+    {
+      "id": "media_coverslip_guide",
+      "type": "MEDIA",
+      "label": "观看：盖玻片时选择",
+      "config": { "assetId": "asset_42a6a5f0ad80", "mediaType": "VIDEO", "caption": "如何正确盖片？" }
+    },
+    {
+      "id": "input_coverslip",
+      "type": "VARIABLE_INPUT",
+      "label": "选择盖片方式",
+      "config": { "variableId": "coverslip_method", "inputMode": "SELECT" }
+    },
+    {
+      "id": "cond_cover",
+      "type": "CONDITION",
+      "label": "判断盖片方式",
+      "config": { "condition": { "variableId": "coverslip_method", "operator": "EQ", "value": "染色适中后直接盖片" } }
+    },
+    {
+      "id": "media_cover_ok",
+      "type": "MEDIA",
+      "label": "结果：染色适中直接盖片",
+      "config": { "assetId": "asset_d85aceb6406b", "mediaType": "VIDEO", "caption": "正确：无气泡，细胞分布均匀" }
+    },
+    {
+      "id": "media_cover_only",
+      "type": "MEDIA",
+      "label": "结果：大滴染色只用盖玻片",
+      "config": { "assetId": "asset_1451de9b2d2a", "mediaType": "VIDEO", "caption": "错误：染料过多，盖片后无法观察" }
+    },
+    {
+      "id": "media_cover_push",
+      "type": "MEDIA",
+      "label": "结果：先推片再盖玻片",
+      "config": { "assetId": "asset_9d9355244ddf", "mediaType": "VIDEO", "caption": "错误：推片破坏细胞分布" }
+    },
+    {
+      "id": "media_lens_guide",
+      "type": "MEDIA",
+      "label": "观看：选择低倍镜还是高倍镜",
+      "config": { "assetId": "asset_44d298215dcd", "mediaType": "VIDEO", "caption": "镜检应如何选择物镜？" }
+    },
+    {
+      "id": "input_lens",
+      "type": "VARIABLE_INPUT",
+      "label": "选择物镜",
+      "config": { "variableId": "lens_choice", "inputMode": "SELECT" }
+    },
+    {
+      "id": "cond_lens",
+      "type": "CONDITION",
+      "label": "判断物镜选择",
+      "config": { "condition": { "variableId": "lens_choice", "operator": "EQ", "value": "先低倍镜再高倍镜" } }
+    },
+    {
+      "id": "media_lens_seq",
+      "type": "MEDIA",
+      "label": "结果：先低倍镜再高倍镜",
+      "config": { "assetId": "asset_f260dc47ee8d", "mediaType": "VIDEO", "caption": "正确：先低倍定位，再转高倍观察" }
+    },
+    {
+      "id": "media_lens_direct",
+      "type": "MEDIA",
+      "label": "结果：直接使用高倍镜",
+      "config": { "assetId": "asset_72741437212a", "mediaType": "VIDEO", "caption": "错误：难以找到视野，易压碎装片" }
+    },
+    {
+      "id": "media_judge",
+      "type": "MEDIA",
+      "label": "观看：判断谁是被吞噬的鸡红细胞",
+      "config": { "assetId": "asset_4884d5b35a49", "mediaType": "VIDEO", "caption": "仔细观察镜下视野" }
+    },
+    {
+      "id": "input_phago",
+      "type": "VARIABLE_INPUT",
+      "label": "指出被吞噬的鸡红细胞",
+      "config": { "variableId": "phagocytosed_cell", "inputMode": "SELECT" }
+    },
+    {
+      "id": "cond_phago",
+      "type": "CONDITION",
+      "label": "判断是否正确",
+      "config": { "condition": { "variableId": "phagocytosed_cell", "operator": "EQ", "value": "被吞入巨噬细胞内的鸡红细胞" } }
+    },
+    {
+      "id": "media_scold",
+      "type": "MEDIA",
+      "label": "判断错误：老师提醒",
+      "config": { "assetId": "asset_58ae57cf7b39", "mediaType": "VIDEO", "caption": "再仔细看看，被吞噬的鸡红细胞在哪里？" }
+    },
+    {
+      "id": "obs_phago",
+      "type": "OBSERVATION",
+      "label": "记录吞噬现象",
+      "config": {
+        "prompt": "描述你在镜下观察到的吞噬现象：被吞噬鸡红细胞的形态、位置，以及一个巨噬细胞内大约有几个鸡红细胞。",
+        "placeholder": "例如：可见巨噬细胞内有多个颜色较浅的鸡红细胞……"
+      }
+    },
+    {
+      "id": "media_slide_clean",
+      "type": "MEDIA",
+      "label": "镜检视野示例：只有巨噬细胞",
+      "config": { "assetId": "asset_b8967c91abf2", "mediaType": "IMAGE", "caption": "制片良好的视野：背景干净，只见巨噬细胞" }
+    },
+    {
+      "id": "media_slide_dirty",
+      "type": "MEDIA",
+      "label": "镜检视野示例：有杂质",
+      "config": { "assetId": "asset_c02e1cf3f702", "mediaType": "IMAGE", "caption": "制片欠佳的视野：有杂质干扰观察" }
+    },
+    {
+      "id": "media_scene",
+      "type": "MEDIA",
+      "label": "观看：选择实验场景",
+      "config": { "assetId": "asset_6f07db0c5544", "mediaType": "VIDEO", "caption": "第二幕：荧光微球定量吞噬实验" }
+    },
+    {
+      "id": "input_scene",
+      "type": "VARIABLE_INPUT",
+      "label": "选择实验场景",
+      "config": { "variableId": "scene_choice", "inputMode": "SELECT" }
+    },
+    {
+      "id": "media_beads",
+      "type": "MEDIA",
+      "label": "观看：孵育荧光微球",
+      "config": { "assetId": "asset_b631712c8141", "mediaType": "VIDEO", "caption": "荧光微球作为可定量的吞噬对象" }
+    },
+    {
+      "id": "act_beads",
+      "type": "ACTION",
+      "label": "孵育荧光微球",
+      "config": { "actionKind": "孵育", "description": "按实验要求孵育荧光微球备用。" }
+    },
+    {
+      "id": "media_fbs",
+      "type": "MEDIA",
+      "label": "观看：加 FBS 入 EP 管",
+      "config": { "assetId": "asset_e8b3cfa4da03", "mediaType": "VIDEO", "caption": "加入胎牛血清（FBS）" }
+    },
+    {
+      "id": "act_fbs",
+      "type": "ACTION",
+      "label": "加入 FBS",
+      "config": { "actionKind": "加样", "description": "向 EP 管中加入 FBS。" }
+    },
+    {
+      "id": "media_wash",
+      "type": "MEDIA",
+      "label": "观看：血清洗涤巨噬细胞",
+      "config": { "assetId": "asset_27de206796ce", "mediaType": "VIDEO", "caption": "洗涤以去除杂质" }
+    },
+    {
+      "id": "act_wash",
+      "type": "ACTION",
+      "label": "血清洗涤巨噬细胞",
+      "config": { "actionKind": "洗涤", "description": "用含血清的培养基洗涤巨噬细胞。" }
+    },
+    {
+      "id": "media_lavage2",
+      "type": "MEDIA",
+      "label": "观看：加入生理盐水吸取腹腔液",
+      "config": { "assetId": "asset_2c914223b05b", "mediaType": "VIDEO", "caption": "冲洗腹腔并回收灌洗液" }
+    },
+    {
+      "id": "act_lavage2",
+      "type": "ACTION",
+      "label": "腹腔灌洗取液",
+      "config": { "actionKind": "灌洗", "description": "加入生理盐水冲洗腹腔，吸取腹腔液。" }
+    },
+    {
+      "id": "media_wash2",
+      "type": "MEDIA",
+      "label": "观看：二次冲洗收集巨噬细胞",
+      "config": { "assetId": "asset_ca2b0d1e4d1a", "mediaType": "VIDEO", "caption": "提高巨噬细胞回收率" }
+    },
+    {
+      "id": "act_wash2",
+      "type": "ACTION",
+      "label": "二次冲洗收集",
+      "config": { "actionKind": "冲洗收集", "description": "二次冲洗腹腔，合并收集巨噬细胞。" }
+    },
+    {
+      "id": "media_centrifuge",
+      "type": "MEDIA",
+      "label": "观看：配平离心",
+      "config": { "assetId": "asset_ef3cba659458", "mediaType": "VIDEO", "caption": "离心前必须配平" }
+    },
+    {
+      "id": "act_centrifuge",
+      "type": "ACTION",
+      "label": "配平后离心",
+      "config": { "actionKind": "离心", "description": "配平后离心，使细胞沉淀。" }
+    },
+    {
+      "id": "media_keep_guide",
+      "type": "MEDIA",
+      "label": "观看：选择要保留的成分",
+      "config": { "assetId": "asset_b05eb39147c2", "mediaType": "VIDEO", "caption": "离心后应该保留哪一部分？" }
+    },
+    {
+      "id": "input_keep",
+      "type": "VARIABLE_INPUT",
+      "label": "选择保留成分",
+      "config": { "variableId": "keep_component", "inputMode": "SELECT" }
+    },
+    {
+      "id": "media_rbc2",
+      "type": "MEDIA",
+      "label": "观看：巨噬细胞加入鸡红细胞",
+      "config": { "assetId": "asset_7a54496eda23", "mediaType": "VIDEO", "caption": "共孵育以进行吞噬" }
+    },
+    {
+      "id": "act_rbc2",
+      "type": "ACTION",
+      "label": "巨噬细胞与鸡红细胞共孵育",
+      "config": { "actionKind": "共孵育", "description": "将巨噬细胞与鸡红细胞混合共孵育。" }
+    },
+    {
+      "id": "media_pbs_guide",
+      "type": "MEDIA",
+      "label": "观看：选择加入 PBS 的部位",
+      "config": { "assetId": "asset_050dea10a9aa", "mediaType": "VIDEO", "caption": "洗涤时 PBS 应加在哪里？" }
+    },
+    {
+      "id": "input_pbs",
+      "type": "VARIABLE_INPUT",
+      "label": "选择加入 PBS 的部位",
+      "config": { "variableId": "pbs_site", "inputMode": "SELECT" }
+    },
+    {
+      "id": "media_plate16",
+      "type": "MEDIA",
+      "label": "观看：加入十六孔板",
+      "config": { "assetId": "asset_03c4ea3765b2", "mediaType": "VIDEO", "caption": "将细胞加入十六孔板" }
+    },
+    {
+      "id": "act_plate16",
+      "type": "ACTION",
+      "label": "加入十六孔板",
+      "config": { "actionKind": "铺板", "description": "将细胞悬液加入十六孔板。" }
+    },
+    {
+      "id": "media_incubate_end",
+      "type": "MEDIA",
+      "label": "观看：孵育结束，加入荧光微球",
+      "config": { "assetId": "asset_5d02e0521de3", "mediaType": "VIDEO", "caption": "荧光微球加入十六孔板" }
+    },
+    {
+      "id": "act_incubate",
+      "type": "ACTION",
+      "label": "加入荧光微球",
+      "config": { "actionKind": "加样", "description": "孵育结束后向孔板加入荧光微球。" }
+    },
+    {
+      "id": "media_keep2_guide",
+      "type": "MEDIA",
+      "label": "观看：选择需要保留的部分",
+      "config": { "assetId": "asset_74789bda1174", "mediaType": "VIDEO", "caption": "再次离心后保留哪一部分？" }
+    },
+    {
+      "id": "input_keep2",
+      "type": "VARIABLE_INPUT",
+      "label": "选择保留部分",
+      "config": { "variableId": "keep_part", "inputMode": "SELECT" }
+    },
+    {
+      "id": "media_plate6",
+      "type": "MEDIA",
+      "label": "观看：六孔板加入巨噬细胞",
+      "config": { "assetId": "asset_f068ff7ad464", "mediaType": "VIDEO", "caption": "转移至六孔板继续培养" }
+    },
+    {
+      "id": "act_plate6",
+      "type": "ACTION",
+      "label": "六孔板加入巨噬细胞",
+      "config": { "actionKind": "铺板", "description": "将巨噬细胞加入六孔板。" }
+    },
+    {
+      "id": "media_resuspend",
+      "type": "MEDIA",
+      "label": "观看：全培养基重悬",
+      "config": { "assetId": "asset_e9f71672222d", "mediaType": "VIDEO", "caption": "全培养基重悬细胞" }
+    },
+    {
+      "id": "act_resuspend",
+      "type": "ACTION",
+      "label": "全培养基重悬",
+      "config": { "actionKind": "重悬", "description": "用全培养基重悬细胞。" }
+    },
+    {
+      "id": "media_result_pos",
+      "type": "MEDIA",
+      "label": "结果参考：正确阳性对照",
+      "config": { "assetId": "asset_bde7d766a777", "mediaType": "IMAGE", "caption": "阳性对照：巨噬细胞内可见明显荧光信号" }
+    },
+    {
+      "id": "media_result_neg",
+      "type": "MEDIA",
+      "label": "结果参考：阴性对照只有微球",
+      "config": { "assetId": "asset_39dfde343f9e", "mediaType": "IMAGE", "caption": "阴性对照：仅见游离微球，细胞内无信号" }
+    },
+    {
+      "id": "q_result",
+      "type": "QUESTION",
+      "label": "结果判读",
+      "config": {
+        "prompt": "对照阳性/阴性对照图像，如何判断荧光微球吞噬实验是否成功？",
+        "options": ["巨噬细胞内出现荧光信号即吞噬成功", "只要视野中有微球即成功", "细胞越多越成功"]
+      }
+    },
+    {
+      "id": "obs_summary",
+      "type": "OBSERVATION",
+      "label": "总结两次实验",
+      "config": {
+        "prompt": "总结经典染色法与荧光微球法观察吞噬现象的异同，以及你在选择点上学到的规范操作要点。",
+        "placeholder": "例如：染色法直观但难以定量，荧光微球法可定量……"
+      }
+    },
+    {
+      "id": "end",
+      "type": "END",
+      "label": "实验结束",
+      "config": { "outcome": "完成巨噬细胞吞噬鸡红细胞的交互式实验，掌握关键操作并理解吞噬现象的观察与判读。" }
+    }
+  ],
+  "transitions": [
+    { "id": "t01", "from": "start", "to": "q_intro" },
+    { "id": "t02", "from": "q_intro", "to": "media_supplies" },
+    { "id": "t03", "from": "media_supplies", "to": "act_supplies" },
+    { "id": "t04", "from": "act_supplies", "to": "media_grip_guide" },
+    { "id": "t05", "from": "media_grip_guide", "to": "input_grip" },
+    { "id": "t06", "from": "input_grip", "to": "cond_grip" },
+    { "id": "t07", "from": "cond_grip", "to": "media_grip_neck", "condition": { "variableId": "grip_site", "operator": "EQ", "value": "颈后（头后侧）皮肤" }, "priority": 10 },
+    { "id": "t08", "from": "cond_grip", "to": "media_grip_forearm", "condition": { "variableId": "grip_site", "operator": "EQ", "value": "前臂后侧皮肤" }, "priority": 5 },
+    { "id": "t09", "from": "cond_grip", "to": "media_grip_back", "condition": { "variableId": "grip_site", "operator": "EQ", "value": "背部皮肤" }, "priority": 1 },
+    { "id": "t10", "from": "media_grip_neck", "to": "media_starch" },
+    { "id": "t11", "from": "media_grip_forearm", "to": "media_starch" },
+    { "id": "t12", "from": "media_grip_back", "to": "media_starch" },
+    { "id": "t13", "from": "media_starch", "to": "act_starch" },
+    { "id": "t14", "from": "act_starch", "to": "media_rbc" },
+    { "id": "t15", "from": "media_rbc", "to": "act_rbc" },
+    { "id": "t16", "from": "act_rbc", "to": "media_massage" },
+    { "id": "t17", "from": "media_massage", "to": "act_massage" },
+    { "id": "t18", "from": "act_massage", "to": "media_sacrifice" },
+    { "id": "t19", "from": "media_sacrifice", "to": "act_sacrifice" },
+    { "id": "t20", "from": "act_sacrifice", "to": "media_fix" },
+    { "id": "t21", "from": "media_fix", "to": "act_fix" },
+    { "id": "t22", "from": "act_fix", "to": "media_dissect_guide" },
+    { "id": "t23", "from": "media_dissect_guide", "to": "input_tools" },
+    { "id": "t24", "from": "input_tools", "to": "cond_tools" },
+    { "id": "t25", "from": "cond_tools", "to": "media_tools_both", "condition": { "variableId": "dissect_tools", "operator": "EQ", "value": "剪刀和镊子" }, "priority": 10 },
+    { "id": "t26", "from": "cond_tools", "to": "media_tools_scissor", "condition": { "variableId": "dissect_tools", "operator": "EQ", "value": "只选剪刀" }, "priority": 5 },
+    { "id": "t27", "from": "cond_tools", "to": "media_tools_forceps", "condition": { "variableId": "dissect_tools", "operator": "EQ", "value": "只选镊子" }, "priority": 1 },
+    { "id": "t28", "from": "media_tools_both", "to": "media_drip" },
+    { "id": "t29", "from": "media_tools_scissor", "to": "media_drip" },
+    { "id": "t30", "from": "media_tools_forceps", "to": "media_drip" },
+    { "id": "t31", "from": "media_drip", "to": "act_drip" },
+    { "id": "t32", "from": "act_drip", "to": "input_stain" },
+    { "id": "t33", "from": "input_stain", "to": "cond_stain" },
+    { "id": "t34", "from": "cond_stain", "to": "media_stain_ok", "condition": { "variableId": "stain_amount", "operator": "EQ", "value": "适中一滴" }, "priority": 10 },
+    { "id": "t35", "from": "cond_stain", "to": "media_stain_xl", "condition": { "variableId": "stain_amount", "operator": "EQ", "value": "超大滴" }, "priority": 5 },
+    { "id": "t36", "from": "cond_stain", "to": "media_stain_l", "condition": { "variableId": "stain_amount", "operator": "EQ", "value": "大滴" }, "priority": 1 },
+    { "id": "t37", "from": "media_stain_ok", "to": "media_coverslip_guide" },
+    { "id": "t38", "from": "media_stain_xl", "to": "media_coverslip_guide" },
+    { "id": "t39", "from": "media_stain_l", "to": "media_coverslip_guide" },
+    { "id": "t40", "from": "media_coverslip_guide", "to": "input_coverslip" },
+    { "id": "t41", "from": "input_coverslip", "to": "cond_cover" },
+    { "id": "t42", "from": "cond_cover", "to": "media_cover_ok", "condition": { "variableId": "coverslip_method", "operator": "EQ", "value": "染色适中后直接盖片" }, "priority": 10 },
+    { "id": "t43", "from": "cond_cover", "to": "media_cover_only", "condition": { "variableId": "coverslip_method", "operator": "EQ", "value": "大滴染色只用盖玻片" }, "priority": 5 },
+    { "id": "t44", "from": "cond_cover", "to": "media_cover_push", "condition": { "variableId": "coverslip_method", "operator": "EQ", "value": "先推片再盖玻片" }, "priority": 1 },
+    { "id": "t45", "from": "media_cover_ok", "to": "media_lens_guide" },
+    { "id": "t46", "from": "media_cover_only", "to": "media_lens_guide" },
+    { "id": "t47", "from": "media_cover_push", "to": "media_lens_guide" },
+    { "id": "t48", "from": "media_lens_guide", "to": "input_lens" },
+    { "id": "t49", "from": "input_lens", "to": "cond_lens" },
+    { "id": "t50", "from": "cond_lens", "to": "media_lens_seq", "condition": { "variableId": "lens_choice", "operator": "EQ", "value": "先低倍镜再高倍镜" }, "priority": 10 },
+    { "id": "t51", "from": "cond_lens", "to": "media_lens_direct", "condition": { "variableId": "lens_choice", "operator": "EQ", "value": "直接使用高倍镜" }, "priority": 5 },
+    { "id": "t52", "from": "media_lens_seq", "to": "media_judge" },
+    { "id": "t53", "from": "media_lens_direct", "to": "media_judge" },
+    { "id": "t54", "from": "media_judge", "to": "input_phago" },
+    { "id": "t55", "from": "input_phago", "to": "cond_phago" },
+    { "id": "t56", "from": "cond_phago", "to": "obs_phago", "condition": { "variableId": "phagocytosed_cell", "operator": "EQ", "value": "被吞入巨噬细胞内的鸡红细胞" }, "priority": 10 },
+    { "id": "t57", "from": "cond_phago", "to": "media_scold", "condition": { "variableId": "phagocytosed_cell", "operator": "EQ", "value": "细胞外游离的鸡红细胞" }, "priority": 5 },
+    { "id": "t58", "from": "cond_phago", "to": "media_scold", "condition": { "variableId": "phagocytosed_cell", "operator": "EQ", "value": "深蓝色的巨噬细胞核" }, "priority": 1 },
+    { "id": "t59", "from": "media_scold", "to": "input_phago" },
+    { "id": "t60", "from": "obs_phago", "to": "media_slide_clean" },
+    { "id": "t61", "from": "media_slide_clean", "to": "media_slide_dirty" },
+    { "id": "t62", "from": "media_slide_dirty", "to": "media_scene" },
+    { "id": "t63", "from": "media_scene", "to": "input_scene" },
+    { "id": "t64", "from": "input_scene", "to": "media_beads" },
+    { "id": "t65", "from": "media_beads", "to": "act_beads" },
+    { "id": "t66", "from": "act_beads", "to": "media_fbs" },
+    { "id": "t67", "from": "media_fbs", "to": "act_fbs" },
+    { "id": "t68", "from": "act_fbs", "to": "media_wash" },
+    { "id": "t69", "from": "media_wash", "to": "act_wash" },
+    { "id": "t70", "from": "act_wash", "to": "media_lavage2" },
+    { "id": "t71", "from": "media_lavage2", "to": "act_lavage2" },
+    { "id": "t72", "from": "act_lavage2", "to": "media_wash2" },
+    { "id": "t73", "from": "media_wash2", "to": "act_wash2" },
+    { "id": "t74", "from": "act_wash2", "to": "media_centrifuge" },
+    { "id": "t75", "from": "media_centrifuge", "to": "act_centrifuge" },
+    { "id": "t76", "from": "act_centrifuge", "to": "media_keep_guide" },
+    { "id": "t77", "from": "media_keep_guide", "to": "input_keep" },
+    { "id": "t78", "from": "input_keep", "to": "media_rbc2" },
+    { "id": "t79", "from": "media_rbc2", "to": "act_rbc2" },
+    { "id": "t80", "from": "act_rbc2", "to": "media_pbs_guide" },
+    { "id": "t81", "from": "media_pbs_guide", "to": "input_pbs" },
+    { "id": "t82", "from": "input_pbs", "to": "media_plate16" },
+    { "id": "t83", "from": "media_plate16", "to": "act_plate16" },
+    { "id": "t84", "from": "act_plate16", "to": "media_incubate_end" },
+    { "id": "t85", "from": "media_incubate_end", "to": "act_incubate" },
+    { "id": "t86", "from": "act_incubate", "to": "media_keep2_guide" },
+    { "id": "t87", "from": "media_keep2_guide", "to": "input_keep2" },
+    { "id": "t88", "from": "input_keep2", "to": "media_plate6" },
+    { "id": "t89", "from": "media_plate6", "to": "act_plate6" },
+    { "id": "t90", "from": "act_plate6", "to": "media_resuspend" },
+    { "id": "t91", "from": "media_resuspend", "to": "act_resuspend" },
+    { "id": "t92", "from": "act_resuspend", "to": "media_result_pos" },
+    { "id": "t93", "from": "media_result_pos", "to": "media_result_neg" },
+    { "id": "t94", "from": "media_result_neg", "to": "q_result" },
+    { "id": "t95", "from": "q_result", "to": "obs_summary" },
+    { "id": "t96", "from": "obs_summary", "to": "end" }
+  ],
+  "rules": [
+    { "id": "r_grip_correct", "when": { "variableId": "grip_site", "operator": "EQ", "value": "颈后（头后侧）皮肤" }, "effects": [{ "type": "SCORE", "value": 10 }] },
+    { "id": "r_tools_correct", "when": { "variableId": "dissect_tools", "operator": "EQ", "value": "剪刀和镊子" }, "effects": [{ "type": "SCORE", "value": 10 }] },
+    { "id": "r_stain_correct", "when": { "variableId": "stain_amount", "operator": "EQ", "value": "适中一滴" }, "effects": [{ "type": "SCORE", "value": 10 }] },
+    { "id": "r_cover_correct", "when": { "variableId": "coverslip_method", "operator": "EQ", "value": "染色适中后直接盖片" }, "effects": [{ "type": "SCORE", "value": 10 }] },
+    { "id": "r_lens_correct", "when": { "variableId": "lens_choice", "operator": "EQ", "value": "先低倍镜再高倍镜" }, "effects": [{ "type": "SCORE", "value": 10 }] },
+    { "id": "r_phago_correct", "when": { "variableId": "phagocytosed_cell", "operator": "EQ", "value": "被吞入巨噬细胞内的鸡红细胞" }, "effects": [{ "type": "SCORE", "value": 10 }] },
+    { "id": "r_keep_correct", "when": { "variableId": "keep_component", "operator": "EQ", "value": "细胞沉淀" }, "effects": [{ "type": "SCORE", "value": 10 }] },
+    { "id": "r_pbs_correct", "when": { "variableId": "pbs_site", "operator": "EQ", "value": "沿孔壁缓慢加入" }, "effects": [{ "type": "SCORE", "value": 10 }] },
+    { "id": "r_keep2_correct", "when": { "variableId": "keep_part", "operator": "EQ", "value": "细胞沉淀" }, "effects": [{ "type": "SCORE", "value": 10 }] }
+  ],
+  "assessment": {
+    "initialScore": 0,
+    "completion": { "type": "REACH_END" },
+    "summary": { "showScore": true, "showKeyEvents": true }
+  },
+  "aiPolicy": {
+    "briefing": { "enabled": true },
+    "tutor": {
+      "enabled": true,
+      "hintLevel": "STANDARD",
+      "revealAnswer": false,
+      "allowExplainTheory": true,
+      "allowPointOutWrongDirection": true
+    },
+    "observationAssist": { "enabled": true },
+    "review": { "enabled": true }
+  }
+}
