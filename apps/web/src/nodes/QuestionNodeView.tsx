@@ -1,8 +1,9 @@
 import type { QuestionNode } from '@virtual-biology-lab/experiment-schema';
 import { useState } from 'react';
+import { NodeActionBar } from '../components/NodeActionBar';
 import type { NodeRendererProps } from './types';
 
-export function QuestionNodeView({ node, busy, onCommand }: NodeRendererProps) {
+export function QuestionNodeView({ node, busy, onCommand, step, back }: NodeRendererProps) {
   const typed = node as QuestionNode;
   const [answer, setAnswer] = useState('');
   const [done, setDone] = useState(false);
@@ -37,7 +38,7 @@ export function QuestionNodeView({ node, busy, onCommand }: NodeRendererProps) {
           onChange={(event) => setAnswer(event.target.value)}
         />
       )}
-      <div className="button-row">
+      <NodeActionBar step={step} busy={busy} canBack={back.canBack} onBack={back.onBack}>
         {!done ? (
           <button
             type="button"
@@ -59,7 +60,7 @@ export function QuestionNodeView({ node, busy, onCommand }: NodeRendererProps) {
             继续
           </button>
         )}
-      </div>
+      </NodeActionBar>
     </section>
   );
 }

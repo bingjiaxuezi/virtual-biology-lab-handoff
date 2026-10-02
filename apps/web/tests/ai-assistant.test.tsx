@@ -137,6 +137,8 @@ describe('ObservationNodeView 观察助手', () => {
     definition: makeDefinition({}),
     state: { variables: {}, score: 0 },
     busy: false,
+    step: 2,
+    back: { canBack: true, onBack: vi.fn() },
   };
 
   it('开关关闭时无 AI 按钮', () => {

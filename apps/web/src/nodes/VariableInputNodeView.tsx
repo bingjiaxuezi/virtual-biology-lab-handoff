@@ -1,5 +1,6 @@
 import type { VariableInputNode } from '@virtual-biology-lab/experiment-schema';
 import { useState } from 'react';
+import { NodeActionBar } from '../components/NodeActionBar';
 import { VariableControl } from '../components/VariableControl';
 import type { NodeRendererProps } from './types';
 
@@ -9,6 +10,8 @@ export function VariableInputNodeView({
   state,
   busy,
   onCommand,
+  step,
+  back,
 }: NodeRendererProps) {
   const typed = node as VariableInputNode;
   const variable = definition.variables.find((v) => v.id === typed.config.variableId);
@@ -37,7 +40,7 @@ export function VariableInputNodeView({
         disabled={busy || done}
         onChange={setValue}
       />
-      <div className="button-row">
+      <NodeActionBar step={step} busy={busy} canBack={back.canBack} onBack={back.onBack}>
         {!done ? (
           <button
             type="button"
@@ -61,7 +64,7 @@ export function VariableInputNodeView({
             继续
           </button>
         )}
-      </div>
+      </NodeActionBar>
     </section>
   );
 }

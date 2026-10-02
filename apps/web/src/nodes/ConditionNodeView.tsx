@@ -1,4 +1,5 @@
 import type { ConditionNode, ConditionOperator } from '@virtual-biology-lab/experiment-schema';
+import { NodeActionBar } from '../components/NodeActionBar';
 import type { NodeRendererProps } from './types';
 
 const OPERATOR_LABEL: Record<ConditionOperator, string> = {
@@ -10,7 +11,15 @@ const OPERATOR_LABEL: Record<ConditionOperator, string> = {
   LTE: '≤',
 };
 
-export function ConditionNodeView({ node, definition, state, busy, onCommand }: NodeRendererProps) {
+export function ConditionNodeView({
+  node,
+  definition,
+  state,
+  busy,
+  onCommand,
+  step,
+  back,
+}: NodeRendererProps) {
   const typed = node as ConditionNode;
   const { variableId, operator, value } = typed.config.condition;
   const variable = definition.variables.find((v) => v.id === variableId);
@@ -25,14 +34,16 @@ export function ConditionNodeView({ node, definition, state, busy, onCommand }: 
       <p className="condition-current">
         当前值：<strong>{String(current)}</strong>
       </p>
-      <button
-        type="button"
-        className="primary"
-        disabled={busy}
-        onClick={() => onCommand({ type: 'ADVANCE' })}
-      >
-        查看结果
-      </button>
+      <NodeActionBar step={step} busy={busy} canBack={back.canBack} onBack={back.onBack}>
+        <button
+          type="button"
+          className="primary"
+          disabled={busy}
+          onClick={() => onCommand({ type: 'ADVANCE' })}
+        >
+          查看结果
+        </button>
+      </NodeActionBar>
     </section>
   );
 }

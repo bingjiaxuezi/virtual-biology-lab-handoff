@@ -55,11 +55,13 @@ function diffVariables(before: RunState, after: RunState): VariableChange[] {
  * 单遍规则求值：按 Definition 声明顺序，对逐步演进中的 State 判断 when；
  * 命中的 Rule 依次应用其 effects。v0.1 不做不动点迭代（无规则链）。
  * 传入 changedVariableId 时，只求值 when 引用该变量的 Rule，避免无关变量变化导致重复计分。
+ * 传入 scoredRuleIds 时，SCORE 效果幂等：已计分 Rule 的 SCORE 效果跳过（SET/ADD/SUBTRACT 照常）。
  */
 export function evaluateRules(
   definition: ExperimentDefinition,
   initialState: RunState,
   changedVariableId?: string,
+  scoredRuleIds?: Set<string>,
 ): { state: RunState; steps: AppliedRuleStep[] } {
   const variableDefs = new Map(definition.variables.map((v) => [v.id, v]));
   let state = initialState;
@@ -70,7 +72,10 @@ export function evaluateRules(
     if (!evaluateCondition(rule.when, state.variables, variableDefs)) continue;
     let next = state;
     for (const effect of rule.effects) {
+      // SCORE 幂等：每条 Rule 每 Run 至多计分一次；其余效果（状态推导）照常
+      if (effect.type === 'SCORE' && scoredRuleIds?.has(rule.id)) continue;
       next = applyEffect(next, effect);
+      if (effect.type === 'SCORE') scoredRuleIds?.add(rule.id);
     }
     steps.push({
       rule,

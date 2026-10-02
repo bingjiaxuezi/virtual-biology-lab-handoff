@@ -46,7 +46,8 @@ export type RuntimeCommand =
   | { type: 'PERFORM_ACTION' }
   | { type: 'SUBMIT_OBSERVATION'; text: string }
   | { type: 'ANSWER_QUESTION'; answer: string }
-  | { type: 'ADVANCE' };
+  | { type: 'ADVANCE' }
+  | { type: 'BACK' };
 
 export type DispatchResult =
   | { ok: true; events: RunEvent[]; run: RunView }

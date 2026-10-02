@@ -1,12 +1,20 @@
 import type { MediaNode } from '@virtual-biology-lab/experiment-schema';
 import { useEffect, useState } from 'react';
 import { assetContentUrl, fetchAssetText } from '../api/client';
+import { NodeActionBar } from '../components/NodeActionBar';
 import type { NodeRendererProps } from './types';
 
 const MEDIA_LABEL: Record<string, string> = { VIDEO: '视频', IMAGE: '图片', TEXT: '文本' };
 
 /** 媒体节点：有实体文件时真实渲染，缺失/加载失败降级为占位卡片，不阻塞流程。 */
-export function MediaNodeView({ node, definition, busy, onCommand }: NodeRendererProps) {
+export function MediaNodeView({
+  node,
+  definition,
+  busy,
+  onCommand,
+  step,
+  back,
+}: NodeRendererProps) {
   const typed = node as MediaNode;
   const asset = definition.assets.find((a) => a.assetId === typed.config.assetId);
   const mediaType = typed.config.mediaType;
@@ -38,12 +46,14 @@ export function MediaNodeView({ node, definition, busy, onCommand }: NodeRendere
     const url = assetContentUrl(assetId);
     if (mediaType === 'IMAGE') {
       return (
-        <img
-          className="media-content"
-          src={url}
-          alt={asset.name ?? assetId}
-          onError={() => setMissing(true)}
-        />
+        <a className="media-zoom" href={url} target="_blank" rel="noreferrer">
+          <img
+            className="media-content"
+            src={url}
+            alt={asset.name ?? assetId}
+            onError={() => setMissing(true)}
+          />
+        </a>
       );
     }
     if (mediaType === 'VIDEO') {
@@ -75,14 +85,16 @@ export function MediaNodeView({ node, definition, busy, onCommand }: NodeRendere
         </div>
       )}
       {typed.config.caption ? <p>{typed.config.caption}</p> : null}
-      <button
-        type="button"
-        className="primary"
-        disabled={busy}
-        onClick={() => onCommand({ type: 'ADVANCE' })}
-      >
-        继续
-      </button>
+      <NodeActionBar step={step} busy={busy} canBack={back.canBack} onBack={back.onBack}>
+        <button
+          type="button"
+          className="primary"
+          disabled={busy}
+          onClick={() => onCommand({ type: 'ADVANCE' })}
+        >
+          继续
+        </button>
+      </NodeActionBar>
     </section>
   );
 }

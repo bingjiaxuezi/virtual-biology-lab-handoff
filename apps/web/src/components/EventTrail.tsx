@@ -3,6 +3,7 @@ import type { RunEvent } from '../api/types';
 const EVENT_LABEL: Record<string, string> = {
   RUN_STARTED: '开始实验',
   NODE_ENTERED: '进入节点',
+  STEPPED_BACK: '回退上一步',
   ACTION_PERFORMED: '执行操作',
   VARIABLE_CHANGED: '变量变化',
   OBSERVATION_SUBMITTED: '提交观察',

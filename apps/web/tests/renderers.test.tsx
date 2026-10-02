@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { RunStateView } from '../src/api/types';
+import { NodeActionBar } from '../src/components/NodeActionBar';
 import { ActionNodeView } from '../src/nodes/ActionNodeView';
 import { ConditionNodeView } from '../src/nodes/ConditionNodeView';
 import { MediaNodeView } from '../src/nodes/MediaNodeView';
@@ -28,6 +29,11 @@ function renderNode(component: React.ReactElement) {
   return render(component);
 }
 
+/** 渲染器公共新 props：默认处于第 2 步、可回退。 */
+function makeBack(overrides: Partial<{ canBack: boolean; onBack: () => void }> = {}) {
+  return { canBack: true, onBack: vi.fn(), ...overrides };
+}
+
 describe('node renderers', () => {
   it('START renders title and objectives, advances on click', async () => {
     const onCommand = vi.fn().mockResolvedValue(true);
@@ -38,6 +44,8 @@ describe('node renderers', () => {
         state={state}
         busy={false}
         onCommand={onCommand}
+        step={1}
+        back={makeBack({ canBack: false })}
       />,
     );
     expect(screen.getByText('温度对酶活性的影响')).toBeInTheDocument();
@@ -54,6 +62,8 @@ describe('node renderers', () => {
         state={state}
         busy={false}
         onCommand={onCommand}
+        step={2}
+        back={makeBack()}
       />,
     );
     fireEvent.click(screen.getByText('执行操作'));
@@ -71,6 +81,8 @@ describe('node renderers', () => {
         state={state}
         busy={false}
         onCommand={onCommand}
+        step={2}
+        back={makeBack()}
       />,
     );
     const slider = screen.getByLabelText('温度');
@@ -96,11 +108,39 @@ describe('node renderers', () => {
         state={state}
         busy={false}
         onCommand={onCommand}
+        step={2}
+        back={makeBack()}
       />,
     );
     const video = container.querySelector('video');
     expect(video).not.toBeNull();
     expect(video!.getAttribute('src')).toContain('/api/assets/asset_normal_video/content');
+  });
+
+  it('MEDIA 图片资源包裹在新标签页打开的链接中，便于看原图', () => {
+    const imageDefinition = {
+      ...definition,
+      assets: [
+        ...definition.assets,
+        { id: 'a_img', assetId: 'asset_img', type: 'IMAGE' as const, name: '示意图' },
+      ],
+    };
+    const { container } = renderNode(
+      <MediaNodeView
+        node={{ id: 'img', type: 'MEDIA', config: { assetId: 'asset_img', mediaType: 'IMAGE' } }}
+        definition={imageDefinition}
+        state={state}
+        busy={false}
+        onCommand={vi.fn().mockResolvedValue(true)}
+        step={2}
+        back={makeBack()}
+      />,
+    );
+    const link = container.querySelector('a.media-zoom');
+    expect(link).not.toBeNull();
+    expect(link!.getAttribute('href')).toContain('/api/assets/asset_img/content');
+    expect(link!.getAttribute('target')).toBe('_blank');
+    expect(link!.querySelector('img')).not.toBeNull();
   });
 
   it('MEDIA 加载失败降级为占位卡片', () => {
@@ -112,6 +152,8 @@ describe('node renderers', () => {
         state={state}
         busy={false}
         onCommand={onCommand}
+        step={2}
+        back={makeBack()}
       />,
     );
     fireEvent.error(container.querySelector('video')!);
@@ -133,6 +175,8 @@ describe('node renderers', () => {
         state={state}
         busy={false}
         onCommand={onCommand}
+        step={2}
+        back={makeBack()}
       />,
     );
     expect(screen.getByText(/未在 assets 中声明/)).toBeInTheDocument();
@@ -147,6 +191,8 @@ describe('node renderers', () => {
         state={state}
         busy={false}
         onCommand={onCommand}
+        step={2}
+        back={makeBack()}
       />,
     );
     const submit = screen.getByText('提交观察');
@@ -167,6 +213,8 @@ describe('node renderers', () => {
         state={state}
         busy={false}
         onCommand={onCommand}
+        step={2}
+        back={makeBack()}
       />,
     );
     fireEvent.change(screen.getByLabelText('回答'), { target: { value: '因为高温使酶变性' } });
@@ -188,6 +236,8 @@ describe('node renderers', () => {
         state={state}
         busy={false}
         onCommand={onCommand}
+        step={2}
+        back={makeBack()}
       />,
     );
     expect(screen.getByText(/判断条件/)).toBeInTheDocument();
@@ -204,8 +254,52 @@ describe('node renderers', () => {
         state={state}
         busy={false}
         onCommand={vi.fn()}
+        step={2}
+        back={makeBack()}
       />,
     );
     expect(screen.getByText('暂不支持')).toBeInTheDocument();
+  });
+});
+
+describe('NodeActionBar', () => {
+  it('起点时回退按钮禁用，步骤提示显示第 N 步', () => {
+    render(
+      <NodeActionBar step={1} busy={false} canBack={false} onBack={vi.fn()}>
+        <button type="button" className="primary">
+          继续
+        </button>
+      </NodeActionBar>,
+    );
+    expect(screen.getByText('← 回退')).toBeDisabled();
+    expect(screen.getByText('第 1 步')).toBeInTheDocument();
+  });
+
+  it('可回退时点击回退触发 onBack', () => {
+    const onBack = vi.fn();
+    render(
+      <NodeActionBar step={3} busy={false} canBack={true} onBack={onBack}>
+        <button type="button" className="primary">
+          继续
+        </button>
+      </NodeActionBar>,
+    );
+    const backButton = screen.getByText('← 回退');
+    expect(backButton).not.toBeDisabled();
+    fireEvent.click(backButton);
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('第 3 步')).toBeInTheDocument();
+  });
+
+  it('busy 时回退按钮禁用，主操作按钮由 children 自控', () => {
+    render(
+      <NodeActionBar step={2} busy={true} canBack={true} onBack={vi.fn()}>
+        <button type="button" className="primary" disabled>
+          提交回答
+        </button>
+      </NodeActionBar>,
+    );
+    expect(screen.getByText('← 回退')).toBeDisabled();
+    expect(screen.getByText('提交回答')).toBeDisabled();
   });
 });

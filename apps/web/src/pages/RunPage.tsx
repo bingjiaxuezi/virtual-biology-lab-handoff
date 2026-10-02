@@ -87,6 +87,13 @@ export function RunPage() {
   const node = definition.nodes.find((n) => n.id === run.currentNodeId);
   if (!node) return <p className="error-banner">当前节点不在实验定义中：{run.currentNodeId}</p>;
 
+  // 访问栈深度 = 进入节点数 - 回退次数，即「第 N 步」；起点或已结束不可回退
+  const enteredCount = events.filter((event) => event.type === 'NODE_ENTERED').length;
+  const backedCount = events.filter((event) => event.type === 'STEPPED_BACK').length;
+  const step = Math.max(1, enteredCount - backedCount);
+  const canBack = run.status === 'RUNNING' && step > 1;
+  const back = { canBack, onBack: () => void sendCommand({ type: 'BACK' }) };
+
   const Renderer = getNodeRenderer(node.type);
 
   return (
@@ -100,6 +107,8 @@ export function RunPage() {
           state={run.state}
           busy={busy}
           onCommand={sendCommand}
+          step={step}
+          back={back}
           ai={{ runId, observationAssistEnabled: definition.aiPolicy.observationAssist.enabled }}
         />
       </div>

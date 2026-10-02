@@ -19,6 +19,7 @@ const dispatchCommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('SUBMIT_OBSERVATION'), text: z.string().min(1).max(4000) }),
   z.object({ type: z.literal('ANSWER_QUESTION'), answer: z.string().min(1).max(2000) }),
   z.object({ type: z.literal('ADVANCE') }),
+  z.object({ type: z.literal('BACK') }),
 ]);
 
 @Controller('runs')

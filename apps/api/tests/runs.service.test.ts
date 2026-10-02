@@ -49,6 +49,7 @@ function makePrisma() {
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    experimentEvent: { findMany: vi.fn().mockResolvedValue([]) },
     $transaction: vi.fn().mockImplementation((fn: (t: unknown) => unknown) => fn(tx)),
   };
 }
@@ -118,6 +119,51 @@ describe('RunsService', () => {
     prisma.experimentRun.findUnique.mockResolvedValue(makeRunRow());
 
     const result = await service.dispatch('run1', { type: 'SUBMIT_OBSERVATION', text: 'x' });
+    expect(result.ok).toBe(false);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('BACK steps back to the previous node using the historical event stream', async () => {
+    prisma.experimentRun.findUnique.mockResolvedValue(makeRunRow());
+    prisma.experimentEvent.findMany.mockResolvedValue(
+      ['start', 'set_temp', 'check_temp'].map((nodeId, i) => ({
+        id: `e${i}`,
+        runId: 'run1',
+        sequence: i + 1,
+        type: 'NODE_ENTERED',
+        nodeId,
+        payload: {},
+        stateBefore: null,
+        stateAfter: null,
+        timestamp: new Date('2026-10-02T00:00:00Z'),
+      })),
+    );
+
+    const result = await service.dispatch('run1', { type: 'BACK' });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('unreachable');
+    expect(result.events[0]!.type).toBe('STEPPED_BACK');
+    expect(result.events[0]!.payload).toEqual({ from: 'check_temp', to: 'set_temp' });
+    expect(result.run.currentNodeId).toBe('set_temp');
+  });
+
+  it('BACK on the start node is rejected without side effects', async () => {
+    prisma.experimentRun.findUnique.mockResolvedValue(makeRunRow({ currentNodeId: 'start' }));
+    prisma.experimentEvent.findMany.mockResolvedValue([
+      {
+        id: 'e1',
+        runId: 'run1',
+        sequence: 1,
+        type: 'NODE_ENTERED',
+        nodeId: 'start',
+        payload: {},
+        stateBefore: null,
+        stateAfter: null,
+        timestamp: new Date('2026-10-02T00:00:00Z'),
+      },
+    ]);
+
+    const result = await service.dispatch('run1', { type: 'BACK' });
     expect(result.ok).toBe(false);
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });

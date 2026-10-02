@@ -9,7 +9,8 @@ export type RuntimeCommand =
   | { type: 'PERFORM_ACTION' }
   | { type: 'SUBMIT_OBSERVATION'; text: string }
   | { type: 'ANSWER_QUESTION'; answer: string }
-  | { type: 'ADVANCE' };
+  | { type: 'ADVANCE' }
+  | { type: 'BACK' };
 
 export const RUNTIME_COMMAND_TYPES = [
   'SET_VARIABLE',
@@ -17,6 +18,7 @@ export const RUNTIME_COMMAND_TYPES = [
   'SUBMIT_OBSERVATION',
   'ANSWER_QUESTION',
   'ADVANCE',
+  'BACK',
 ] as const;
 
 export interface RunView {

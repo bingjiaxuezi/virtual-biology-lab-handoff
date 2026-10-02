@@ -97,7 +97,7 @@ export class RunsService {
     action: (runtime: ExperimentRuntime) => Promise<DispatchResult>,
   ) {
     const row = await this.loadRun(runId);
-    const eventLog = new BufferedEventLog(row.lastSequence);
+    const eventLog = new BufferedEventLog(row.lastSequence, (rid) => this.loadHistory(rid));
     const runtime = createExperimentRuntime({ eventLog });
 
     const restored = runtime.restore(this.toSnapshot(row), row.experimentVersion.definition);
@@ -181,6 +181,25 @@ export class RunsService {
     });
     if (!row) throw new NotFoundException(`Run "${runId}" not found`);
     return row;
+  }
+
+  /** 读取 Run 的完整历史事件，供 Runtime 重建访问栈与已计分 Rule 集合 */
+  private async loadHistory(runId: string): Promise<ExperimentEvent[]> {
+    const rows = await this.prisma.experimentEvent.findMany({
+      where: { runId },
+      orderBy: { sequence: 'asc' },
+    });
+    return rows.map((event) => ({
+      eventId: event.id,
+      runId: event.runId,
+      sequence: event.sequence,
+      type: event.type as ExperimentEvent['type'],
+      ...(event.nodeId !== null ? { nodeId: event.nodeId } : {}),
+      payload: event.payload as Record<string, unknown>,
+      ...(event.stateBefore !== null ? { stateBefore: event.stateBefore as RunState } : {}),
+      ...(event.stateAfter !== null ? { stateAfter: event.stateAfter as RunState } : {}),
+      timestamp: event.timestamp.toISOString(),
+    }));
   }
 
   private toSnapshot(row: RunRow): RunSnapshot {

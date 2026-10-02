@@ -13,7 +13,12 @@ import { SequenceConflictError } from '@virtual-biology-lab/experiment-events';
 export class BufferedEventLog implements EventLog {
   private readonly buffered: ExperimentEvent[] = [];
 
-  constructor(private readonly baseSequence: number) {}
+  private history: ExperimentEvent[] | undefined;
+
+  constructor(
+    private readonly baseSequence: number,
+    private readonly loadHistory?: (runId: string) => Promise<ExperimentEvent[]>,
+  ) {}
 
   async append(input: NewExperimentEvent & { sequence?: number }): Promise<ExperimentEvent> {
     const nextSequence = this.baseSequence + this.buffered.length + 1;
@@ -29,8 +34,12 @@ export class BufferedEventLog implements EventLog {
     return event;
   }
 
-  async getByRun(): Promise<ExperimentEvent[]> {
-    return [...this.buffered];
+  async getByRun(runId: string): Promise<ExperimentEvent[]> {
+    // BACK/SCORE 幂等需要完整事件流：历史部分只从 DB 读一次
+    if (this.history === undefined) {
+      this.history = this.loadHistory ? await this.loadHistory(runId) : [];
+    }
+    return [...this.history, ...this.buffered];
   }
 
   async lastSequence(): Promise<number> {

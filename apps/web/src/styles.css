@@ -53,7 +53,7 @@ body {
 .app-main {
   flex: 1;
   padding: 24px;
-  max-width: 1080px;
+  max-width: 1280px;
   width: 100%;
   margin: 0 auto;
 }
@@ -109,6 +109,13 @@ body {
   gap: 16px;
 }
 
+@media (min-width: 801px) {
+  .run-side {
+    position: sticky;
+    top: 24px;
+  }
+}
+
 .node-panel {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -154,10 +161,57 @@ button.primary:disabled {
   cursor: not-allowed;
 }
 
-.button-row {
+/* 统一操作栏：回退固定左下，主操作固定右下 */
+.action-bar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.action-bar-left,
+.action-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.step-hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* 次级按钮（回退、AI 建议等）统一描边样式 */
+.back-button,
+.action-bar-right button:not(.primary),
+.ai-actions button,
+.ai-suggestion button {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.back-button:hover:not(:disabled),
+.action-bar-right button:not(.primary):hover:not(:disabled),
+.ai-actions button:hover:not(:disabled),
+.ai-suggestion button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.back-button:disabled,
+.action-bar-right button:disabled,
+.ai-actions button:disabled,
+.ai-suggestion button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .node-panel textarea,
@@ -229,12 +283,25 @@ button.primary:disabled {
 }
 
 .media-content {
+  display: block;
   width: 100%;
-  max-height: 420px;
+  max-height: 60vh;
   object-fit: contain;
   border-radius: 8px;
   background: #101418;
   margin-bottom: 8px;
+}
+
+video.media-content {
+  aspect-ratio: 16 / 9;
+}
+
+a.media-zoom {
+  display: block;
+}
+
+a.media-zoom img.media-content {
+  cursor: zoom-in;
 }
 
 .media-text {

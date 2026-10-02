@@ -1,8 +1,9 @@
 import type { ActionNode } from '@virtual-biology-lab/experiment-schema';
 import { useState } from 'react';
+import { NodeActionBar } from '../components/NodeActionBar';
 import type { NodeRendererProps } from './types';
 
-export function ActionNodeView({ node, busy, onCommand }: NodeRendererProps) {
+export function ActionNodeView({ node, busy, onCommand, step, back }: NodeRendererProps) {
   const typed = node as ActionNode;
   const [done, setDone] = useState(false);
 
@@ -11,7 +12,7 @@ export function ActionNodeView({ node, busy, onCommand }: NodeRendererProps) {
       <h2>{typed.label ?? '实验操作'}</h2>
       <p className="action-kind">{typed.config.actionKind}</p>
       {typed.config.description ? <p>{typed.config.description}</p> : null}
-      <div className="button-row">
+      <NodeActionBar step={step} busy={busy} canBack={back.canBack} onBack={back.onBack}>
         {!done ? (
           <button
             type="button"
@@ -33,7 +34,7 @@ export function ActionNodeView({ node, busy, onCommand }: NodeRendererProps) {
             继续
           </button>
         )}
-      </div>
+      </NodeActionBar>
     </section>
   );
 }

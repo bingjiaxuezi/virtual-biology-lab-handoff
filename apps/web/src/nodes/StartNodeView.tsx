@@ -1,7 +1,15 @@
 import type { StartNode } from '@virtual-biology-lab/experiment-schema';
+import { NodeActionBar } from '../components/NodeActionBar';
 import type { NodeRendererProps } from './types';
 
-export function StartNodeView({ node, definition, busy, onCommand }: NodeRendererProps) {
+export function StartNodeView({
+  node,
+  definition,
+  busy,
+  onCommand,
+  step,
+  back,
+}: NodeRendererProps) {
   const typed = node as StartNode;
   return (
     <section className="node-panel">
@@ -17,14 +25,16 @@ export function StartNodeView({ node, definition, busy, onCommand }: NodeRendere
           </ul>
         </div>
       ) : null}
-      <button
-        type="button"
-        className="primary"
-        disabled={busy}
-        onClick={() => onCommand({ type: 'ADVANCE' })}
-      >
-        进入实验
-      </button>
+      <NodeActionBar step={step} busy={busy} canBack={back.canBack} onBack={back.onBack}>
+        <button
+          type="button"
+          className="primary"
+          disabled={busy}
+          onClick={() => onCommand({ type: 'ADVANCE' })}
+        >
+          进入实验
+        </button>
+      </NodeActionBar>
     </section>
   );
 }

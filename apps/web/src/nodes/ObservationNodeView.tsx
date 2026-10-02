@@ -1,9 +1,10 @@
 import type { ObservationNode } from '@virtual-biology-lab/experiment-schema';
 import { useState } from 'react';
 import { ApiError, api } from '../api/client';
+import { NodeActionBar } from '../components/NodeActionBar';
 import type { NodeRendererProps } from './types';
 
-export function ObservationNodeView({ node, busy, onCommand, ai }: NodeRendererProps) {
+export function ObservationNodeView({ node, busy, onCommand, step, back, ai }: NodeRendererProps) {
   const typed = node as ObservationNode;
   const [text, setText] = useState('');
   const [done, setDone] = useState(false);
@@ -43,7 +44,7 @@ export function ObservationNodeView({ node, busy, onCommand, ai }: NodeRendererP
         disabled={busy || done}
         onChange={(event) => setText(event.target.value)}
       />
-      <div className="button-row">
+      <NodeActionBar step={step} busy={busy} canBack={back.canBack} onBack={back.onBack}>
         {ai?.observationAssistEnabled && !done && (
           <button type="button" disabled={busy || aiBusy} onClick={() => void askAssist()}>
             {aiBusy ? '思考中…' : 'AI 完善建议'}
@@ -70,7 +71,7 @@ export function ObservationNodeView({ node, busy, onCommand, ai }: NodeRendererP
             继续
           </button>
         )}
-      </div>
+      </NodeActionBar>
       {aiError && <p className="ai-error">{aiError}</p>}
       {suggestion && !done && (
         <div className="ai-suggestion">

@@ -188,6 +188,41 @@ export function createExperimentRuntime(options: {
     return record;
   }
 
+  /** 从事件流重建已计分 Rule 集合（RULE_APPLIED 且 effects 含 SCORE）。无状态恢复友好。 */
+  async function collectScoredRuleIds(record: RunRecord): Promise<Set<string>> {
+    const ids = new Set<string>();
+    for (const event of await eventLog.getByRun(record.runId)) {
+      if (event.type !== 'RULE_APPLIED') continue;
+      const { ruleId, effects } = event.payload;
+      if (
+        typeof ruleId === 'string' &&
+        Array.isArray(effects) &&
+        effects.some((e) => (e as { type?: unknown }).type === 'SCORE')
+      ) {
+        ids.add(ruleId);
+      }
+    }
+    return ids;
+  }
+
+  /**
+   * BACK：从事件流重建访问栈（NODE_ENTERED 压栈、STEPPED_BACK 弹栈），
+   * 回到上一个节点。不回滚变量/分数/事件，只追加 STEPPED_BACK 事实。
+   */
+  async function handleBack(record: RunRecord): Promise<DispatchResult> {
+    const stack: string[] = [];
+    for (const event of await eventLog.getByRun(record.runId)) {
+      if (event.type === 'NODE_ENTERED' && event.nodeId) stack.push(event.nodeId);
+      else if (event.type === 'STEPPED_BACK') stack.pop();
+    }
+    if (stack.length < 2) return fail('No earlier node to step back to');
+    const from = stack.pop();
+    const to = stack[stack.length - 1];
+    if (from === undefined || to === undefined) return fail('No earlier node to step back to');
+    record.actor.send({ type: 'RESTORE_TO', nodeId: to });
+    return { ok: true, events: [await emit(record, 'STEPPED_BACK', { from, to }, to)] };
+  }
+
   async function handleSetVariable(
     record: RunRecord,
     command: Extract<RuntimeCommand, { type: 'SET_VARIABLE' }>,
@@ -226,6 +261,7 @@ export function createExperimentRuntime(options: {
       record.definition,
       afterSet,
       command.variableId,
+      await collectScoredRuleIds(record),
     );
     for (const step of steps) {
       events.push(
@@ -368,6 +404,8 @@ export function createExperimentRuntime(options: {
         }
         case 'ADVANCE':
           return handleAdvance(record);
+        case 'BACK':
+          return handleBack(record);
         default:
           return fail(`Unknown command type "${String((command as { type: unknown }).type)}"`);
       }
