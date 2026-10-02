@@ -2,8 +2,9 @@
 
 ## MODIFIED Requirements
 
-### Requirement: AI Copilot 面板
-教师端 MUST 在编辑器中提供 AI Copilot 面板：输入教学意图生成草案，或输入修改指令生成 Change Proposal；面板 MUST 展示服务端生成的变更摘要与校验问题；教师确认后提案 MUST 仅写入编辑器草稿态（标记未保存），教师也可直接试玩提案内容；MUST NOT 提供「生成即发布」类入口。
+### Requirement: AI Copilot 占位
+
+教师端 MUST 在编辑器中提供真实可用的 AI Copilot 面板（取代占位入口）：输入教学意图生成草案，或输入修改指令生成 Change Proposal；面板 MUST 展示服务端生成的变更摘要与校验问题；教师确认后提案 MUST 仅写入编辑器草稿态（标记未保存），教师也可直接试玩提案内容；MUST NOT 提供「生成即发布」类入口，MUST NOT 再呈现「即将上线」占位。
 
 #### Scenario: 生成并确认应用
 - **WHEN** 教师在 Copilot 面板输入意图、生成草案并点击「应用到草稿」
