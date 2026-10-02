@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import type { ValidationIssue } from '@virtual-biology-lab/experiment-validator';
 import { validateExperiment } from '@virtual-biology-lab/experiment-validator';
@@ -11,7 +11,7 @@ export interface DraftSaveResult {
 
 @Injectable()
 export class ExperimentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   /**
    * 草稿保存：只要求结构可解析（三层校验跑完），语义/能力问题作为 warning 返回。

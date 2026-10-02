@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
-import type { RunsService } from './runs.service.js';
+import { RunsService } from './runs.service.js';
 
 const createRunSchema = z.object({
   experimentVersionId: z.string().min(1),
@@ -22,7 +22,7 @@ const dispatchCommandSchema = z.discriminatedUnion('type', [
 
 @Controller('runs')
 export class RunsController {
-  constructor(private readonly runs: RunsService) {}
+  constructor(@Inject(RunsService) private readonly runs: RunsService) {}
 
   @Post()
   create(@Body(new ZodValidationPipe(createRunSchema)) body: z.infer<typeof createRunSchema>) {

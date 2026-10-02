@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
-import type { AssetsService } from './assets.service.js';
+import { AssetsService } from './assets.service.js';
 
 /** 资源只做逻辑登记：assetId/类型/元数据，绝不包含供应商 URL。 */
 const registerAssetSchema = z.object({
@@ -13,7 +13,7 @@ const registerAssetSchema = z.object({
 
 @Controller('assets')
 export class AssetsController {
-  constructor(private readonly assets: AssetsService) {}
+  constructor(@Inject(AssetsService) private readonly assets: AssetsService) {}
 
   @Post()
   register(

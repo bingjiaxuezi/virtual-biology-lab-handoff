@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -25,7 +26,7 @@ type RunRow = Prisma.ExperimentRunGetPayload<{ include: { experimentVersion: tru
  */
 @Injectable()
 export class RunsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async create(experimentVersionId: string, studentId: string) {
     const version = await this.prisma.experimentVersion.findUnique({

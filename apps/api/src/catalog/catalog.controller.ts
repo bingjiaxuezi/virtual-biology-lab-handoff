@@ -1,9 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import type { CatalogService } from './catalog.service.js';
+import { Controller, Get, Inject, Param } from '@nestjs/common';
+import { CatalogService } from './catalog.service.js';
 
 @Controller('catalog')
 export class CatalogController {
-  constructor(private readonly catalog: CatalogService) {}
+  constructor(@Inject(CatalogService) private readonly catalog: CatalogService) {}
 
   /** 学生可见的已发布实验目录：只含标题与最新版本信息，绝不包含草稿内容。 */
   @Get()

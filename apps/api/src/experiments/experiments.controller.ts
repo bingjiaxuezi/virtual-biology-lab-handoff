@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Post, Put } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
-import type { ExperimentsService } from './experiments.service.js';
+import { ExperimentsService } from './experiments.service.js';
 
 const createDraftSchema = z.object({
   title: z.string().min(1),
@@ -15,7 +15,7 @@ const updateDraftSchema = z.object({
 
 @Controller('experiments')
 export class ExperimentsController {
-  constructor(private readonly experiments: ExperimentsService) {}
+  constructor(@Inject(ExperimentsService) private readonly experiments: ExperimentsService) {}
 
   @Post()
   create(@Body(new ZodValidationPipe(createDraftSchema)) body: z.infer<typeof createDraftSchema>) {

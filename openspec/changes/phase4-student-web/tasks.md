@@ -21,4 +21,4 @@
 - [x] 3.1 渲染器组件测试：八种节点渲染与交互命令正确
 - [x] 3.2 会话流程测试（mock API）：目录 → 创建 → 80℃ 路径 → 完成，命令序列与状态刷新正确
 - [x] 3.3 全量 vitest + tsc + biome 通过；`openspec validate phase4-student-web` 通过
-- [ ] 3.4 手动联调记录：docker-compose 起库 → API → Web，双实验各跑一遍并截图/记录
+- [x] 3.4 手动联调记录：docker-compose 起库 → API → Web，双实验各跑一遍并截图/记录
