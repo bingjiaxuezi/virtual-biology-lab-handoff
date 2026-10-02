@@ -89,6 +89,21 @@ virtual-biology-lab/
 └── schemas/
 ```
 
-## 6. 当前明确不做
+## 6. 本地开发快速启动
+
+```bash
+pnpm install
+
+# 数据库一键引导：库不存在则创建 → 版本化迁移 → 幂等种子（教师账号+样板实验）
+cd apps/api
+$env:DATABASE_URL = "postgresql://vlab:vlab_dev_password@localhost:5432/virtual_biology_lab"  # Windows PowerShell
+pnpm db:setup
+```
+
+- `db:setup` 可反复执行：已存在的账号/实验/资源自动跳过，零副作用；新环境首跑一次即可就绪。
+- 初始教师账号默认 `teacher_dev` / `dev-password-123`，可用 `SEED_TEACHER_USERNAME` / `SEED_TEACHER_PASSWORD` 覆盖；数据库只存 bcrypt 哈希。
+- AI 能力默认使用 Mock Provider（离线可用）；接入真实供应商时在 `apps/api/.env` 配置 `AI_PROVIDER=openai-compatible` 与 `AI_BASE_URL` / `AI_API_KEY` / `AI_MODEL`。
+
+## 7. 当前明确不做
 
 Iteration 1 不做：VR/AR、完整 3D 实验室、科研级 ODE/PDE 求解、自研视频播放器、自研状态机、自研 LMS、复杂多租户、复杂权限、支付、实验社区、模板市场、AI 自动生成高质量实验视频、AI 无审核发布、复杂开放式自动评分、Kafka/RabbitMQ/Kubernetes/LangChain 等非必要基础设施。
