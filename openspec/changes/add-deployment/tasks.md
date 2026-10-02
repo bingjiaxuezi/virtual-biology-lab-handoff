@@ -13,21 +13,21 @@
 
 ## 3. 容器镜像定义
 
-- [ ] 3.1 编写 `apps/api/Dockerfile`：多阶段构建，pnpm workspace 感知（优先 `pnpm deploy --filter @virtual-biology-lab/api --prod` 方案；若产物缺包则改为整仓构建拷贝），含 `prisma/schema.prisma` 与 `migrations/`，运行时阶段仅含生产依赖与编译产物，基础镜像 `node:20-alpine`
-- [ ] 3.2 编写 `deploy/docker-entrypoint-api.sh`：容器入口先执行 `prisma migrate deploy`，失败非零退出，成功后 `node dist/main.js`
-- [ ] 3.3 编写 `apps/web/Dockerfile` 与 `apps/studio/Dockerfile`：仅构建阶段产出 dist（`vite build`）；`apps/studio` 配置 `base: '/studio/'`；产出供统一 Nginx 托管
-- [ ] 3.4 为各 Dockerfile 编写 `.dockerignore`：排除 `node_modules`、`dist`、`.env`、`logs`、`tests`
-- [ ] 3.5 本地构建全部镜像（或构建产物），用 `docker run` 冒烟验证 API 镜像：连接 postgres 容器后 `/api/health` 正常、迁移可执行、镜像内无 `.env`/源码/`devDependencies`
+- [x] 3.1 编写 `apps/api/Dockerfile`：多阶段构建，pnpm workspace 感知（`pnpm deploy --filter @virtual-biology-lab/api --prod --legacy`，已实测产出完整依赖闭包），含 `prisma/schema.prisma` 与 `migrations/`，运行时阶段仅含生产依赖与编译产物，基础镜像 `node:20-alpine`
+- [x] 3.2 编写 `deploy/docker-entrypoint-api.sh`：容器入口先执行 `prisma migrate deploy`，失败非零退出，成功后 `node dist/main.js`
+- [x] 3.3 编写 `apps/web/Dockerfile` 与 `apps/studio/Dockerfile`：仅构建阶段产出 dist（`vite build`）；`apps/studio` 配置 `base: '/studio/'`（已验证 dist 引用 `/studio/assets/...`）；产出供统一 Nginx 托管
+- [x] 3.4 为各 Dockerfile 编写 `.dockerignore`：排除 `node_modules`、`dist`、`.env`、`logs`、`tests`（实现为仓库根级 `.dockerignore`，所有镜像均以仓库根为构建上下文）
+- [ ] 3.5 本地构建全部镜像，用 `docker run` 冒烟验证 API 镜像：连接 postgres 容器后 `/api/health` 正常、迁移可执行、镜像内无 `.env`/源码/`devDependencies`【受阻：本机 Docker Desktop 守护进程反复卡死（两次重启 + WSL 重启后 CLI 仍无响应），未能完成容器内验证。已完成宿主级彩排：`pnpm deploy` 产物目录以 `node dist/main.js` 成功启动并通过 /api/health，生产依赖闭包不含 tsx/vitest。待 Docker 环境修复后补跑镜像构建】
 
 ## 4. 发布与上传脚本
 
-- [ ] 4.1 编写 `deploy/activate.sh`（POSIX sh，服务器执行）：备份现有配置 → 构建/加载镜像 → 迁移先行（失败即退出）→ 重建 `vlab-api` 容器（`--network story-network`、`127.0.0.1:13000:3000`、`--env-file /opt/virtual-biology-lab/.env`、`--restart unless-stopped`）→ 健康检查（重试窗口，仿 StudyPet 的 nginx:alpine wget 方式）→ 失败回滚到上一镜像 tag 并输出日志
-- [ ] 4.2 编写 `deploy/upload-image.sh`（本地执行）：本地 `docker build` → `docker save | gzip` → ssh 管道 `docker load` 到服务器；注明 Windows 下用 base64 传脚本的注意事项；无本地 Docker 时的备选路径（rsync 源码到服务器构建）写入脚本注释
-- [ ] 4.3 编写 `deploy/nginx.conf` 模板：server 块含学生端 `/`、教师端 `/studio/`、`/api/` 反代 `vlab-api:3000`、证书路径占位；本次仅入库不启用
-- [ ] 4.4 编写 `deploy/README.md`：目录用途、执行顺序、前置条件（服务器目录结构、`.env` 权限 600、不动 `mysql8043` 等操作守则）
+- [x] 4.1 编写 `deploy/activate.sh`（POSIX sh，服务器执行）：备份现有配置 → 迁移先行（失败即退出）→ 重建 `vlab-api` 容器（`--network story-network`、`127.0.0.1:13000:3000`、`--env-file /opt/virtual-biology-lab/.env`、`--restart unless-stopped`）→ 健康检查（重试窗口，仿 StudyPet 的 nginx:alpine wget 方式）→ 失败回滚到上一镜像 tag 并输出日志
+- [x] 4.2 编写 `deploy/build-and-upload.sh`（本地执行）：本地 `docker build` → `docker save | gzip` → ssh 管道 `docker load` 到服务器；注明 Windows 下用 base64 传脚本的注意事项；无本地 Docker 时的备选路径（rsync 源码到服务器构建）写入脚本注释
+- [x] 4.3 编写 `deploy/nginx.conf` 模板：server 块含学生端 `/`、教师端 `/studio/`、`/api/` 反代 `vlab-api:3000`、证书路径占位；本次仅入库不启用
+- [x] 4.4 编写 `deploy/README.md`：目录用途、执行顺序、前置条件（服务器目录结构、`.env` 权限 600、不动 `mysql8043` 等操作守则）
 
 ## 5. 验证与文档
 
-- [ ] 5.1 `pnpm -r run test`、`pnpm -r run typecheck`、`pnpm lint` 全部通过
-- [ ] 5.2 `openspec validate add-deployment --strict` 通过
-- [ ] 5.3 检查 `docs/` 中是否有与部署方式冲突的描述（如 `COMPREHENSIVE_HANDOFF.md` 的 Deploy 行），如有则同步更新，保持规格与文档一致
+- [x] 5.1 `pnpm -r run test`、`pnpm -r run typecheck` 全部通过；`pnpm lint` 仅剩 3 处既有格式问题（位于未提交的用户改动文件 `apps/studio/src/editor/` 下，非本变更引入）；本变更触及的文件 biome 检查通过
+- [x] 5.2 `openspec validate add-deployment --strict` 通过
+- [x] 5.3 检查 `docs/` 中是否有与部署方式冲突的描述（如 `COMPREHENSIVE_HANDOFF.md` 的 Deploy 行），如有则同步更新，保持规格与文档一致（已更新 Deploy 行为“原生 docker 命令 + 发布脚本”）
