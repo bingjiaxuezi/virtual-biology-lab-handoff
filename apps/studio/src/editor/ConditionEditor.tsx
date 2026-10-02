@@ -4,6 +4,7 @@ import type {
   ConditionValue,
   ExperimentVariable,
 } from '@virtual-biology-lab/experiment-schema';
+import { BOOLEAN_LABEL, OPERATOR_LABEL } from './labels';
 
 const OPERATORS: ConditionOperator[] = ['EQ', 'NEQ', 'GT', 'LT', 'GTE', 'LTE'];
 
@@ -40,8 +41,8 @@ export function ConditionEditor({
           value={String(condition.value)}
           onChange={(e) => onChange({ ...condition, value: e.target.value === 'true' })}
         >
-          <option value="true">true</option>
-          <option value="false">false</option>
+          <option value="true">{BOOLEAN_LABEL.true}</option>
+          <option value="false">{BOOLEAN_LABEL.false}</option>
         </select>
       );
     }
@@ -84,7 +85,7 @@ export function ConditionEditor({
       >
         {OPERATORS.map((op) => (
           <option key={op} value={op}>
-            {op}
+            {OPERATOR_LABEL[op]}
           </option>
         ))}
       </select>

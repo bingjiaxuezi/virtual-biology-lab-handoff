@@ -5,6 +5,7 @@ import type {
   VariableInputMode,
 } from '@virtual-biology-lab/experiment-schema';
 import { ConditionEditor } from './ConditionEditor';
+import { MEDIA_TYPE_LABEL, NODE_TYPE_LABEL } from './labels';
 
 /** 右侧属性面板：选中节点或连线时编辑其配置，写回 Definition。 */
 export function Inspector({
@@ -72,7 +73,7 @@ function NodeForm({
 
   return (
     <div className="inspector">
-      <h3>节点 · {node.type}</h3>
+      <h3>节点 · {NODE_TYPE_LABEL[node.type] ?? node.type}</h3>
       <Field label="ID">
         <input value={node.id} disabled />
       </Field>
@@ -155,7 +156,8 @@ function NodeForm({
               <option value="">（选择资源）</option>
               {definition.assets.map((a) => (
                 <option key={a.id} value={a.assetId}>
-                  {a.name ?? a.assetId}（{a.type}）
+                  {a.name ?? a.assetId}（
+                  {MEDIA_TYPE_LABEL[a.type as keyof typeof MEDIA_TYPE_LABEL] ?? a.type}）
                 </option>
               ))}
             </select>

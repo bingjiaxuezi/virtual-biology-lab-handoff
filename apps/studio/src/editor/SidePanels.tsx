@@ -5,6 +5,7 @@ import type {
   RuleEffect,
 } from '@virtual-biology-lab/experiment-schema';
 import { ConditionEditor } from './ConditionEditor';
+import { EFFECT_LABEL } from './labels';
 
 /** 变量 / 规则 / 资源 三个列表编辑面板。 */
 
@@ -242,10 +243,11 @@ export function RulesPanel({
                   updateEffect(rule, index, next);
                 }}
               >
-                <option value="SET">SET</option>
-                <option value="ADD">ADD</option>
-                <option value="SUBTRACT">SUBTRACT</option>
-                <option value="SCORE">SCORE</option>
+                {(Object.keys(EFFECT_LABEL) as RuleEffect['type'][]).map((type) => (
+                  <option key={type} value={type}>
+                    {EFFECT_LABEL[type]}
+                  </option>
+                ))}
               </select>
               {effect.type !== 'SCORE' && (
                 <select
@@ -257,7 +259,7 @@ export function RulesPanel({
                   <option value="">（变量）</option>
                   {definition.variables.map((v) => (
                     <option key={v.id} value={v.id}>
-                      {v.id}
+                      {v.name}（{v.id}）
                     </option>
                   ))}
                 </select>

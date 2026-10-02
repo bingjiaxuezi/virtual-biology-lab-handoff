@@ -23,6 +23,7 @@ import {
   updateNode,
   updateTransition,
 } from '../editor/edits';
+import { NODE_TYPE_LABEL } from '../editor/labels';
 import { PreviewModal } from '../preview/PreviewModal';
 
 const nodeTypes = { experimentNode: FlowNodeView };
@@ -205,7 +206,7 @@ function EditorInner() {
           <select value={newNodeType} onChange={(e) => setNewNodeType(e.target.value as NodeType)}>
             {nodeTypeSchema.options.map((type) => (
               <option key={type} value={type}>
-                {type}
+                {NODE_TYPE_LABEL[type]}
               </option>
             ))}
           </select>
