@@ -72,7 +72,7 @@ export function ObservationNodeView({ node, busy, onCommand, ai }: NodeRendererP
         )}
       </div>
       {aiError && <p className="ai-error">{aiError}</p>}
-      {suggestion && (
+      {suggestion && !done && (
         <div className="ai-suggestion">
           <p>{suggestion}</p>
           <button

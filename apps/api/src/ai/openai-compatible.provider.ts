@@ -10,6 +10,9 @@ interface ChatCompletionResponse {
   error?: { message?: string };
 }
 
+/** 单次 AI 请求的超时上限：防止 Provider 挂起导致 HTTP 请求一直悬挂。 */
+const REQUEST_TIMEOUT_MS = 120_000;
+
 /** OpenAI 兼容 Provider：同一协议覆盖 OpenAI / DeepSeek / 通义等，配置全走环境变量。 */
 export class OpenAICompatibleProvider implements AIProvider {
   readonly id = 'openai-compatible';
@@ -23,32 +26,21 @@ export class OpenAICompatibleProvider implements AIProvider {
   ) {}
 
   async generateStructured(request: StructuredGenerationRequest): Promise<unknown> {
-    const response = await fetch(`${this.baseUrl.replace(/\/$/, '')}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        max_tokens: this.maxTokens,
-        messages: [
-          { role: 'system', content: request.systemPrompt },
-          {
-            role: 'user',
-            content: request.jsonSchemaHint
-              ? `${request.userPrompt}\n\n输出 JSON 结构要求：\n${request.jsonSchemaHint}`
-              : request.userPrompt,
-          },
-        ],
-        response_format: { type: 'json_object' },
-      }),
+    const body = await this.postChat({
+      model: this.model,
+      max_tokens: this.maxTokens,
+      messages: [
+        { role: 'system', content: request.systemPrompt },
+        {
+          role: 'user',
+          content: request.jsonSchemaHint
+            ? `${request.userPrompt}\n\n输出 JSON 结构要求：\n${request.jsonSchemaHint}`
+            : request.userPrompt,
+        },
+      ],
+      response_format: { type: 'json_object' },
     });
 
-    if (!response.ok) {
-      throw new Error(`AI provider request failed: ${response.status}`);
-    }
-    const body = (await response.json()) as ChatCompletionResponse;
     const choice = body.choices?.[0];
     const content = choice?.message?.content;
     if (!content) {
@@ -67,30 +59,43 @@ export class OpenAICompatibleProvider implements AIProvider {
   }
 
   async generateText(request: TextGenerationRequest): Promise<string> {
-    const response = await fetch(`${this.baseUrl.replace(/\/$/, '')}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        max_tokens: this.maxTokens,
-        messages: [
-          { role: 'system', content: request.systemPrompt },
-          { role: 'user', content: request.userPrompt },
-        ],
-      }),
+    const body = await this.postChat({
+      model: this.model,
+      max_tokens: this.maxTokens,
+      messages: [
+        { role: 'system', content: request.systemPrompt },
+        { role: 'user', content: request.userPrompt },
+      ],
     });
 
-    if (!response.ok) {
-      throw new Error(`AI provider request failed: ${response.status}`);
-    }
-    const body = (await response.json()) as ChatCompletionResponse;
     const content = body.choices?.[0]?.message?.content;
     if (!content) {
       throw new Error(`AI provider returned no content: ${body.error?.message ?? 'unknown'}`);
     }
     return content;
+  }
+
+  private async postChat(payload: Record<string, unknown>): Promise<ChatCompletionResponse> {
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl.replace(/\/$/, '')}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+    } catch (cause) {
+      if (cause instanceof Error && cause.name === 'TimeoutError') {
+        throw new Error(`AI 服务响应超时（>${REQUEST_TIMEOUT_MS / 1000}s），请重试`);
+      }
+      throw cause;
+    }
+    if (!response.ok) {
+      throw new Error(`AI provider request failed: ${response.status}`);
+    }
+    return (await response.json()) as ChatCompletionResponse;
   }
 }

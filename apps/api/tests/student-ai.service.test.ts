@@ -55,6 +55,7 @@ function makePrisma(overrides: { status?: string; aiPolicyEnabled?: boolean } = 
     experimentRun: { findUnique: vi.fn().mockResolvedValue(run) },
     experimentEvent: {
       findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
       createMany: tx.experimentEvent.createMany,
     },
     $transaction: vi.fn((fn: (t: typeof tx) => unknown) => fn(tx)),
@@ -151,5 +152,16 @@ describe('StudentAiService', () => {
   it('Run 不存在：404', async () => {
     prisma.experimentRun.findUnique.mockResolvedValue(null);
     await expect(service.briefing('missing')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('配额：hint 达到上限返回 429，不调 Provider、不记事件', async () => {
+    prisma.experimentEvent.count.mockResolvedValue(20);
+
+    await expect(service.hint('run1')).rejects.toMatchObject({ status: 429 });
+    await expect(service.hint('run1')).rejects.toMatchObject({
+      response: { code: 'AI_RATE_LIMITED', feature: 'hint', max: 20 },
+    });
+    expect(provider.calls).toHaveLength(0);
+    expect(prisma.__tx.experimentEvent.createMany).not.toHaveBeenCalled();
   });
 });

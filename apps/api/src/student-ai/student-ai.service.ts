@@ -1,6 +1,8 @@
 import {
   ConflictException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   NotFoundException,
@@ -26,6 +28,17 @@ type AiEventType =
   | 'AI_OBSERVATION_ASSISTED'
   | 'AI_REVIEW_GENERATED';
 
+/** 每个 Run 各 AI 功能的调用上限：端点公开且真实消耗 Provider 额度，防刷。 */
+const AI_CALL_LIMITS: Record<
+  'briefing' | 'hint' | 'observationAssist' | 'review',
+  { countBy: AiEventType[]; max: number }
+> = {
+  briefing: { countBy: ['AI_BRIEFING_VIEWED'], max: 5 },
+  hint: { countBy: ['AI_HINT_REQUESTED'], max: 20 },
+  observationAssist: { countBy: ['AI_OBSERVATION_ASSISTED'], max: 20 },
+  review: { countBy: ['AI_REVIEW_GENERATED'], max: 5 },
+};
+
 /** Student AI：只读上下文 + 文本生成；除 AI 事件落库外不改变 Run 任何状态。 */
 @Injectable()
 export class StudentAiService {
@@ -37,6 +50,7 @@ export class StudentAiService {
   async briefing(runId: string) {
     const { run, ctx } = await this.loadContext(runId);
     this.requireEnabled(ctx.definition.aiPolicy.briefing.enabled);
+    await this.requireWithinLimit(run.id, 'briefing');
     const text = await this.provider.generateText(buildBriefingPrompt(ctx));
     await this.appendAiEvents(run, [{ type: 'AI_BRIEFING_VIEWED', payload: {} }], ctx.state);
     return { text };
@@ -45,6 +59,7 @@ export class StudentAiService {
   async hint(runId: string) {
     const { run, ctx } = await this.loadContext(runId);
     this.requireEnabled(ctx.definition.aiPolicy.tutor.enabled);
+    await this.requireWithinLimit(run.id, 'hint');
     const text = await this.provider.generateText(buildHintPrompt(ctx));
     await this.appendAiEvents(
       run,
@@ -60,6 +75,7 @@ export class StudentAiService {
   async observationAssist(runId: string, draftText: string) {
     const { run, ctx } = await this.loadContext(runId);
     this.requireEnabled(ctx.definition.aiPolicy.observationAssist.enabled);
+    await this.requireWithinLimit(run.id, 'observationAssist');
     const suggestion = await this.provider.generateText(
       buildObservationAssistPrompt(ctx, draftText),
     );
@@ -77,6 +93,7 @@ export class StudentAiService {
     if (run.status !== 'COMPLETED') {
       throw new ConflictException({ code: 'AI_REVIEW_NOT_READY' });
     }
+    await this.requireWithinLimit(run.id, 'review');
     const allEvents = await this.prisma.experimentEvent.findMany({
       where: { runId: run.id },
       orderBy: { sequence: 'asc' },
@@ -90,6 +107,20 @@ export class StudentAiService {
   private requireEnabled(enabled: boolean) {
     if (!enabled) {
       throw new ForbiddenException({ code: 'AI_FEATURE_DISABLED' });
+    }
+  }
+
+  /** 配额检查在 Provider 调用之前：超限直接 429，不消耗额度、不记事件。 */
+  private async requireWithinLimit(runId: string, feature: keyof typeof AI_CALL_LIMITS) {
+    const limit = AI_CALL_LIMITS[feature];
+    const used = await this.prisma.experimentEvent.count({
+      where: { runId, type: { in: limit.countBy } },
+    });
+    if (used >= limit.max) {
+      throw new HttpException(
+        { code: 'AI_RATE_LIMITED', feature, max: limit.max },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
   }
 

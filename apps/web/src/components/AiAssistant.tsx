@@ -1,6 +1,12 @@
 import type { ExperimentDefinition, ExperimentNode } from '@virtual-biology-lab/experiment-schema';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ApiError, api } from '../api/client';
+
+const KIND_LABEL: Record<string, string> = {
+  briefing: '实验导读',
+  hint: 'AI 提示',
+  review: '实验复盘',
+};
 
 /**
  * 学生端 AI 助教：导读（START）/ 提示（任意节点）/ 复盘（完成后）。
@@ -22,9 +28,16 @@ export function AiAssistant({
   const showHint = policy.tutor.enabled;
   const showReview = policy.review.enabled && status === 'COMPLETED';
 
-  const [text, setText] = useState<string | null>(null);
+  const [reply, setReply] = useState<{ kind: string; text: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+
+  // 切换节点或运行状态变化时清掉上一条回复，避免残留误导
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 刻意以 node.id/status 作为重置触发器
+  useEffect(() => {
+    setReply(null);
+    setError(null);
+  }, [node.id, status]);
 
   if (!showBriefing && !showHint && !showReview) return null;
 
@@ -33,10 +46,12 @@ export function AiAssistant({
     setError(null);
     try {
       const result = await fn();
-      setText(result.text);
+      setReply({ kind, text: result.text });
     } catch (cause) {
       if (cause instanceof ApiError && cause.status === 403) setError('本实验未开启此 AI 功能');
       else if (cause instanceof ApiError && cause.status === 409) setError('实验完成后才能复盘');
+      else if (cause instanceof ApiError && cause.status === 429)
+        setError('本次实验的 AI 使用次数已用完');
       else setError(cause instanceof Error ? cause.message : 'AI 请求失败');
     } finally {
       setBusy(null);
@@ -76,7 +91,12 @@ export function AiAssistant({
         )}
       </div>
       {error && <p className="ai-error">{error}</p>}
-      {text && !error && <p className="ai-text">{text}</p>}
+      {reply && !error && (
+        <div className="ai-text-block">
+          <span className="ai-text-kind">{KIND_LABEL[reply.kind] ?? 'AI 回复'}</span>
+          <p className="ai-text">{reply.text}</p>
+        </div>
+      )}
     </aside>
   );
 }

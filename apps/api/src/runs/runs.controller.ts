@@ -16,8 +16,8 @@ const dispatchCommandSchema = z.discriminatedUnion('type', [
     value: z.union([z.number(), z.string(), z.boolean()]),
   }),
   z.object({ type: z.literal('PERFORM_ACTION') }),
-  z.object({ type: z.literal('SUBMIT_OBSERVATION'), text: z.string() }),
-  z.object({ type: z.literal('ANSWER_QUESTION'), answer: z.string() }),
+  z.object({ type: z.literal('SUBMIT_OBSERVATION'), text: z.string().min(1).max(4000) }),
+  z.object({ type: z.literal('ANSWER_QUESTION'), answer: z.string().min(1).max(2000) }),
   z.object({ type: z.literal('ADVANCE') }),
 ]);
 
