@@ -8,6 +8,7 @@ import type { ExperimentDefinition, NodeType } from '@virtual-biology-lab/experi
 import { validateExperiment } from '@virtual-biology-lab/experiment-validator';
 import { ApiError, api } from '../api/client';
 import type { ExperimentRecord } from '../api/types';
+import { CopilotPanel } from '../copilot/CopilotPanel';
 import { FlowNodeView } from '../editor/FlowNode';
 import { Inspector } from '../editor/Inspector';
 import { AssetsPanel, RulesPanel, VariablesPanel } from '../editor/SidePanels';
@@ -49,6 +50,7 @@ function EditorInner() {
   const [selectedTransitionId, setSelectedTransitionId] = useState<string | null>(null);
   const [newNodeType, setNewNodeType] = useState<NodeType>('ACTION');
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [copilotOpen, setCopilotOpen] = useState(false);
   const idCounter = useRef(1);
 
   useEffect(() => {
@@ -219,11 +221,7 @@ function EditorInner() {
           <button type="button" onClick={() => void publish()}>
             发布
           </button>
-          <button
-            type="button"
-            title="AI Copilot"
-            onClick={() => setNotice('AI Copilot 即将上线（Phase 6），当前为占位入口。')}
-          >
+          <button type="button" title="AI Copilot" onClick={() => setCopilotOpen(true)}>
             ✨ AI
           </button>
         </div>
@@ -323,6 +321,16 @@ function EditorInner() {
       </div>
       {previewOpen && (
         <PreviewModal definition={definition} onClose={() => setPreviewOpen(false)} />
+      )}
+      {copilotOpen && (
+        <CopilotPanel
+          experimentId={record.id}
+          onApply={(next) => {
+            apply(next);
+            setNotice('AI 提案已应用到草稿（未保存）');
+          }}
+          onClose={() => setCopilotOpen(false)}
+        />
       )}
     </div>
   );

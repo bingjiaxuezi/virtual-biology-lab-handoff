@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AiModule } from './ai/ai.module.js';
 import { AssetsModule } from './assets/assets.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
@@ -12,6 +13,7 @@ import { RunsModule } from './runs/runs.module.js';
   imports: [
     PrismaModule,
     AuthModule,
+    AiModule,
     HealthModule,
     AssetsModule,
     ExperimentsModule,

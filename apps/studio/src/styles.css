@@ -449,6 +449,25 @@ textarea {
 }
 
 /* ---------- 弹窗 / 试玩 ---------- */
+/* ---------- Copilot ---------- */
+.copilot-modal {
+  width: 640px;
+}
+
+.copilot-tabs {
+  margin-bottom: 12px;
+}
+
+.proposal ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.tag.ok-tag {
+  background: #e6f4ea;
+  color: var(--ok);
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;

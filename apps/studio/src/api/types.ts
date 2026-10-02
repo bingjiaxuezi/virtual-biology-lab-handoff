@@ -26,6 +26,14 @@ export interface PublishResult {
   warnings: ValidationIssue[];
 }
 
+export interface AiProposal {
+  definition: unknown;
+  issues: ValidationIssue[];
+  needsReview: boolean;
+  provider: string;
+  summary?: string[];
+}
+
 export interface RunSummary {
   runId: string;
   version: number;

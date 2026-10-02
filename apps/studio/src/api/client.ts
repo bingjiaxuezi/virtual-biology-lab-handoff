@@ -1,4 +1,5 @@
 import type {
+  AiProposal,
   DraftSaveResult,
   ExperimentRecord,
   PublishResult,
@@ -90,5 +91,15 @@ export const api = {
   publishExperiment: (id: string) =>
     request<PublishResult>(`/experiments/${id}/publish`, { method: 'POST' }),
   listRuns: (id: string) => request<RunSummary[]>(`/experiments/${id}/runs`),
+  aiGenerate: (id: string, intent: string) =>
+    request<AiProposal>(`/experiments/${id}/ai/generate`, {
+      method: 'POST',
+      body: JSON.stringify({ intent }),
+    }),
+  aiChange: (id: string, instruction: string) =>
+    request<AiProposal>(`/experiments/${id}/ai/change`, {
+      method: 'POST',
+      body: JSON.stringify({ instruction }),
+    }),
   getRunEvents: (runId: string) => request<TrailEvent[]>(`/runs/${runId}/events`),
 };
