@@ -11,7 +11,8 @@
 | `docker-entrypoint-api.sh` | 镜像内 | 容器入口：`prisma migrate deploy` → `node dist/main.js` |
 | `build-and-upload.sh` | 本地（Git Bash/WSL） | 构建三个镜像并经 ssh 管道 `docker load` 到服务器 |
 | `activate.sh` | 服务器 | 发布 vlab-api：备份 → 迁移先行 → 重建容器 → 健康检查 → 失败回滚 |
-| `nginx.conf` | 服务器（Phase 2 启用） | 共享 Nginx 的 server 块模板 |
+| `nginx.conf` | 服务器 | 共享 Nginx 的 server 块模板（与线上 nginx-conf 一致：39271 HTTP + 39272 HTTPS） |
+| `certs-setup.md` | 服务器 | HTTPS 证书手册（DuckDNS + acme.sh DNS-01，签发/续期/换域名） |
 
 ## 服务器前置条件（Phase 1 首次部署时执行一次）
 
@@ -28,6 +29,18 @@ docker run -d --name vlab-postgres --restart unless-stopped \
   postgres:16-alpine
 # .env 中 DATABASE_URL 主机名用 vlab-postgres（容器别名），不是 localhost
 ```
+
+素材文件存储在命名卷 `vlab-storage`（activate.sh 重建容器时自动挂载，无需手工创建；丢失挂载会导致素材 404）。
+
+## 访问入口与安全组
+
+| 入口 | 地址 | 说明 |
+| --- | --- | --- |
+| HTTPS 学生端 | `https://virtual-biology-lab.duckdns.org:39272/` | 推荐，证书 acme.sh 自动续期 |
+| HTTPS 教师端 | `https://virtual-biology-lab.duckdns.org:39272/studio/` | 同上 |
+| HTTP 备用 | `http://<server-ip>:39271/` | IP 直连，不受域名拦截影响 |
+
+安全组（防火墙）需放行：TCP 22（白名单 IP）、39271、39272。80/443 对未备案域名被腾讯云拦截，vlab 不使用。证书签发/续期见 `certs-setup.md`。
 
 ## 发布流程
 
