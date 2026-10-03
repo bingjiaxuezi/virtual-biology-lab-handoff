@@ -17,7 +17,7 @@
 - [x] 3.2 编写 `deploy/docker-entrypoint-api.sh`：容器入口先执行 `prisma migrate deploy`，失败非零退出，成功后 `node dist/main.js`
 - [x] 3.3 编写 `apps/web/Dockerfile` 与 `apps/studio/Dockerfile`：仅构建阶段产出 dist（`vite build`）；`apps/studio` 配置 `base: '/studio/'`（已验证 dist 引用 `/studio/assets/...`）；产出供统一 Nginx 托管
 - [x] 3.4 为各 Dockerfile 编写 `.dockerignore`：排除 `node_modules`、`dist`、`.env`、`logs`、`tests`（实现为仓库根级 `.dockerignore`，所有镜像均以仓库根为构建上下文）
-- [ ] 3.5 本地构建全部镜像，用 `docker run` 冒烟验证 API 镜像：连接 postgres 容器后 `/api/health` 正常、迁移可执行、镜像内无 `.env`/源码/`devDependencies`【受阻：本机 Docker Desktop 守护进程反复卡死（两次重启 + WSL 重启后 CLI 仍无响应），未能完成容器内验证。已完成宿主级彩排：`pnpm deploy` 产物目录以 `node dist/main.js` 成功启动并通过 /api/health，生产依赖闭包不含 tsx/vitest。待 Docker 环境修复后补跑镜像构建】
+- [x] 3.5 本地构建全部镜像，用 `docker run` 冒烟验证 API 镜像：连接 postgres 容器后 `/api/health` 正常、迁移可执行、镜像内无 `.env`/源码/`devDependencies`【已在 CI docker-smoke（ubuntu 干净环境）与服务器实机构建双端验证：镜像构建成功，容器运行 healthy，迁移与 /api/health 通过】
 
 ## 4. 发布与上传脚本
 
