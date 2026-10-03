@@ -1,0 +1,2 @@
+# 归档/跨平台一致性：shell 脚本始终保持 LF（Windows 上 git archive/checkout 不得转 CRLF）
+*.sh text eol=lf
