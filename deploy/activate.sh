@@ -39,6 +39,7 @@ docker run -d --name "$CONTAINER" \
   --network "$NETWORK" --network-alias "$CONTAINER" \
   --env-file "$APP_ROOT/.env" \
   -p 127.0.0.1:13000:3000 \
+  -v vlab-storage:/app/storage \
   "$IMAGE"
 
 # 健康检查（复用旧项目的 nginx:alpine wget 模式）
@@ -62,6 +63,7 @@ if [ "$healthy" -ne 1 ]; then
       --network "$NETWORK" --network-alias "$CONTAINER" \
       --env-file "$APP_ROOT/.env" \
       -p 127.0.0.1:13000:3000 \
+      -v vlab-storage:/app/storage \
       "$PREV_IMAGE"
     echo "已回滚到 $PREV_IMAGE" >&2
   else

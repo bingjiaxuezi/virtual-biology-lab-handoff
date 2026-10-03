@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Inject,
   NotFoundException,
   Param,
@@ -19,9 +20,10 @@ import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 import { resolveMaxUploadBytes } from './assets.config.js';
 import { AssetsService, type UploadedFilePayload } from './assets.service.js';
 
-/** passthrough 模式下只需 setHeader（避免仅为类型引入 @types/express）。 */
+/** passthrough 模式下只需 setHeader/status（避免仅为类型引入 @types/express）。 */
 interface ContentResponse {
   setHeader(name: string, value: string): void;
+  status(code: number): unknown;
 }
 
 /** 资源只做逻辑登记：assetId/类型/元数据，绝不包含供应商 URL。 */
@@ -65,15 +67,29 @@ export class AssetsController {
   async content(
     @Param('assetId') assetId: string,
     @Res({ passthrough: true }) res: ContentResponse,
+    @Headers('range') rangeHeader?: string,
   ) {
-    const content = await this.assets.getContent(assetId);
-    if (!content) {
+    const result = await this.assets.getContentRange(assetId, rangeHeader);
+    if (!result) {
       throw new NotFoundException({ code: 'ASSET_CONTENT_MISSING', assetId });
     }
-    res.setHeader('Content-Type', content.mimeType);
-    if (content.sizeBytes != null) res.setHeader('Content-Length', String(content.sizeBytes));
+    res.setHeader('Content-Type', result.mimeType);
+    res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Cache-Control', 'public, max-age=3600');
-    return new StreamableFile(content.data);
+    if ('unsatisfiable' in result) {
+      res.status(416);
+      res.setHeader('Content-Range', `bytes */${result.total}`);
+      return { code: 'ASSET_RANGE_UNSATISFIABLE', total: result.total };
+    }
+    if (result.range) {
+      res.status(206);
+      res.setHeader(
+        'Content-Range',
+        `bytes ${result.range.start}-${result.range.end}/${result.range.total}`,
+      );
+    }
+    res.setHeader('Content-Length', String(result.data.length));
+    return new StreamableFile(result.data);
   }
 
   @Get()

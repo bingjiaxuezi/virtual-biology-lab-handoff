@@ -76,4 +76,60 @@ describeIf('assets (integration)', () => {
     await assets.register({ assetId: 'it_meta_only', type: 'VIDEO', name: '仅元数据' });
     expect(await assets.getContent('it_meta_only')).toBeNull();
   });
+
+  it('Range 切片：合法区间 / 开区间 / 尾区间 / 越界 / 多区间回退', async () => {
+    const bytes = Buffer.from(Array.from({ length: 4096 }, (_, i) => i % 251));
+    const created = await assets.upload({
+      type: 'VIDEO',
+      name: 'range 测试视频',
+      file: { buffer: bytes, mimetype: 'video/mp4', size: bytes.length, originalname: 'r.mp4' },
+    });
+    await prisma.asset.update({
+      where: { assetId: created.assetId },
+      data: { assetId: `it_${created.assetId}` },
+    });
+    const id = `it_${created.assetId}`;
+
+    // 无 Range → 全量
+    const full = await assets.getContentRange(id);
+    expect(full && !('unsatisfiable' in full) && full.range === null).toBe(true);
+    expect(full && !('unsatisfiable' in full) && full.data.length).toBe(4096);
+
+    // 闭区间
+    const part = await assets.getContentRange(id, 'bytes=0-1023');
+    expect(part && !('unsatisfiable' in part) && part.range).toEqual({
+      start: 0,
+      end: 1023,
+      total: 4096,
+    });
+    expect(part && !('unsatisfiable' in part) && part.data.equals(bytes.subarray(0, 1024))).toBe(
+      true,
+    );
+
+    // 开区间 start-
+    const open = await assets.getContentRange(id, 'bytes=2048-');
+    expect(open && !('unsatisfiable' in open) && open.range).toEqual({
+      start: 2048,
+      end: 4095,
+      total: 4096,
+    });
+
+    // 尾区间 -500
+    const tail = await assets.getContentRange(id, 'bytes=-500');
+    expect(tail && !('unsatisfiable' in tail) && tail.range).toEqual({
+      start: 3596,
+      end: 4095,
+      total: 4096,
+    });
+    expect(tail && !('unsatisfiable' in tail) && tail.data.length).toBe(500);
+
+    // 越界 → unsatisfiable（控制器据此返回 416）
+    const over = await assets.getContentRange(id, 'bytes=99999999-');
+    expect(over && 'unsatisfiable' in over && over.total).toBe(4096);
+
+    // 多区间 → 回退全量
+    const multi = await assets.getContentRange(id, 'bytes=0-100,200-300');
+    expect(multi && !('unsatisfiable' in multi) && multi.range === null).toBe(true);
+    expect(multi && !('unsatisfiable' in multi) && multi.data.length).toBe(4096);
+  });
 });

@@ -8,6 +8,7 @@ import {
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { STORAGE_PROVIDER, type StorageProvider } from '../storage/storage-provider.js';
+import { parseBytesRange } from './range.js';
 
 /** multer 内存存储上传文件的最小结构（避免仅为类型引入 @types/multer）。 */
 export interface UploadedFilePayload {
@@ -104,6 +105,24 @@ export class AssetsService {
     const object = await this.storage.get(asset.storageKey);
     if (!object) return null;
     return { data: object.data, mimeType: asset.mimeType, sizeBytes: asset.sizeBytes };
+  }
+
+  /** 按 Range 读取实体文件切片；仅登记元数据时返回 null。 */
+  async getContentRange(assetId: string, rangeHeader?: string) {
+    const content = await this.getContent(assetId);
+    if (!content) return null;
+    const total = content.data.length;
+    const parsed = parseBytesRange(rangeHeader, total);
+    if (parsed === 'unsatisfiable') {
+      return { unsatisfiable: true as const, total, mimeType: content.mimeType };
+    }
+    if (!parsed) return { ...content, range: null };
+    return {
+      data: content.data.subarray(parsed.start, parsed.end + 1),
+      mimeType: content.mimeType,
+      sizeBytes: content.sizeBytes,
+      range: { start: parsed.start, end: parsed.end, total },
+    };
   }
 
   list() {
