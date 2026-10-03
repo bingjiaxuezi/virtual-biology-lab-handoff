@@ -20,6 +20,8 @@ COPY packages/experiment-events/package.json packages/experiment-events/
 COPY packages/experiment-runtime/package.json packages/experiment-runtime/
 COPY packages/experiment-schema/package.json packages/experiment-schema/
 COPY packages/experiment-validator/package.json packages/experiment-validator/
+# postinstall 会执行 prisma generate，需先拷贝 schema（避免整层源码拷贝以保住缓存）
+COPY apps/api/prisma apps/api/prisma
 # 本地 .npmrc 的 store-dir 是 Windows 绝对路径，容器内改写为 Linux 路径
 RUN sed -i 's|^store-dir=.*|store-dir=/pnpm-store|' .npmrc && pnpm install --frozen-lockfile
 # 拷贝源码并构建（pnpm 拓扑序：先 packages 后 api）
