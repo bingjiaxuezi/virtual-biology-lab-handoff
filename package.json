@@ -12,7 +12,8 @@
     "test": "pnpm -r run test",
     "typecheck": "pnpm -r run typecheck",
     "lint": "biome check .",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "postinstall": "pnpm --filter @virtual-biology-lab/api prisma:generate"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

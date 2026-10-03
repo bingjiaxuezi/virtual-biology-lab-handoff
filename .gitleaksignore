@@ -1,0 +1,4 @@
+# gitleaks 误报指纹：测试文件中的假 JWT 密钥（非真实凭证）
+2d1ff3e5515dd7f0935e29199bfb4a65304d4538:apps/api/tests/auth.integration.test.ts:generic-api-key:22
+2d1ff3e5515dd7f0935e29199bfb4a65304d4538:apps/api/tests/auth.service.test.ts:generic-api-key:8
+2d1ff3e5515dd7f0935e29199bfb4a65304d4538:apps/api/tests/auth.guard.test.ts:generic-api-key:8
