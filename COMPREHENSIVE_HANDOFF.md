@@ -494,7 +494,7 @@ Definition 中只存 `assetId`。真实对象存储位置由 Asset Service 管�
 | AI | Provider Adapter | 半自研 | OpenAI/DeepSeek 等 |
 | Test | Vitest + Playwright | 复用 | 单测/E2E |
 | Repo | pnpm workspace | 复用 | Monorepo |
-| Deploy | Docker Compose | 复用 | MVP 部署 |
+| Deploy | Docker（原生 docker 命令 + 发布脚本） | 复用 | MVP 部署（目标服务器无 docker compose；镜像定义与脚本见 `deploy/`，规格见 `openspec/specs/deployment`） |
 
 ## 自研部分
 

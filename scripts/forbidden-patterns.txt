@@ -1,0 +1,6 @@
+# 禁止进入版本库的通用模式（每行一个 ERE 正则，# 开头为注释）
+# CI 的 secret-scan job 与本地提交前检查共用本清单；新增模式需走代码评审。
+# 注意：本身即为敏感信息的模式（如服务器 IP 字面值）不放入本文件，
+# 由 scripts/forbidden-patterns.local.txt（gitignored）或 CI 变量 FORBIDDEN_PATTERNS_EXTRA（base64）注入。
+# 各类私钥头
+-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----

@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
-    "start": "tsx src/main.ts",
+    "dev": "node --watch --conditions=development --import tsx src/main.ts",
+    "start": "node dist/main.js",
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -25,6 +25,7 @@
     "@nestjs/platform-express": "catalog:",
     "@prisma/client": "catalog:",
     "bcryptjs": "catalog:",
+    "prisma": "catalog:",
     "@virtual-biology-lab/capability-registry": "workspace:*",
     "@virtual-biology-lab/experiment-events": "workspace:*",
     "@virtual-biology-lab/experiment-runtime": "workspace:*",
@@ -36,7 +37,6 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "prisma": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

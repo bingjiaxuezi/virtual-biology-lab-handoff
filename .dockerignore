@@ -1,0 +1,12 @@
+# Docker 构建上下文（仓库根目录）排除项
+# 所有 Dockerfile 都以仓库根为构建上下文：docker build -f <app>/Dockerfile .
+.git
+**/node_modules
+**/dist
+**/.env
+**/*.log
+openspec
+docs
+examples
+prompts
+schemas

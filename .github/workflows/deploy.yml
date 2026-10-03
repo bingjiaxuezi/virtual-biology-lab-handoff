@@ -1,0 +1,86 @@
+name: Deploy
+
+# 一键发布：手动触发 → 构建三镜像推 GHCR → 服务器 runner 拉取并激活（迁移先行/健康检查/失败回滚）。
+# 安全约束：self-hosted runner 只允许出现在本工作流（workflow_dispatch），fork PR 与 push 均触碰不到。
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "目标代码引用（分支 / tag / commit SHA）"
+        required: true
+        default: develop
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: vlab-production-deploy
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  PNPM_VERSION: "10.30.3"
+
+jobs:
+  build-push:
+    name: 构建并推送三镜像
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [api, web, studio]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: 计算发布标签
+        id: meta
+        run: echo "tag=sha-$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: 登录 GHCR（GITHUB_TOKEN，无长期密钥）
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 构建并推送 api / web / studio
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/${{ matrix.target }}/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/vlab-${{ matrix.target }}:${{ steps.meta.outputs.tag }}
+          cache-from: type=gha,scope=${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+
+  deploy:
+    name: 服务器激活
+    needs: build-push
+    runs-on: [self-hosted, vlab-server]
+    steps:
+      - name: 拉取镜像并激活
+        env:
+          TAG: ${{ needs.build-push.outputs.tag }}
+          REGISTRY: ghcr.io
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          for target in api web studio; do
+            docker pull "$REGISTRY/$OWNER/vlab-$target:$TAG"
+          done
+          # activate.sh 约定本地镜像名 vlab-api:<tag>，回滚指针也以此为准
+          docker tag "$REGISTRY/$OWNER/vlab-api:$TAG" "vlab-api:$TAG"
+          /opt/virtual-biology-lab/deploy/activate.sh "$TAG"
+
+      - name: 发布结果
+        if: always()
+        run: |
+          echo "release tag: ${{ needs.build-push.outputs.tag }}"
+          docker ps --format '{{.Names}} | {{.Image}} | {{.Status}}' | grep vlab || true
