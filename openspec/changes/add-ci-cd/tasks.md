@@ -31,8 +31,8 @@
 
 - [x] 5.1 更新 `deploy/README.md`：CI/CD 使用说明（检查项、一键发布流程、回滚方式、runner 降级手工路径）、服务器准备清单更新（无需 GHCR 登录——公开包）
 - [x] 5.2 workflow YAML 语法校验（actionlint 或等价手段）
-- [ ] 5.3 推送后观察 CI 四个 job 全绿（含 docker-smoke）；本机既有 lint 错误（用户未提交改动）先与维护者确认处理方式
-- [ ] 5.4 负向验证：在测试分支提交一个假密钥，确认 secret-scan 将 CI 打红，随后删除该分支
-- [ ] 5.5 端到端验证：手动触发 deploy.yml，确认全自动完成构建 → 推送 → 服务器激活 → 健康检查通过
-- [ ] 5.6 `openspec validate add-ci-cd --strict` 通过
-- [ ] 5.7 提请维护者在 GitHub 网页完成三个一次性设置：GHCR 三个 package 设为公开；Actions 权限启用 "Require approval for all outside collaborators"；确认 secret scanning + push protection 已开启
+- [x] 5.3 推送后观察 CI 四个 job 全绿（含 docker-smoke）；本机既有 lint 错误（用户未提交改动）先与维护者确认处理方式
+- [x] 5.4 负向验证：在测试分支提交一个假密钥，确认 secret-scan 将 CI 打红，随后删除该分支
+- [x] 5.5 端到端验证：手动触发 deploy.yml，确认全自动完成构建 → 推送 → 服务器激活 → 健康检查通过
+- [x] 5.6 `openspec validate add-ci-cd --strict` 通过
+- [ ] 5.7 提请维护者在 GitHub 网页完成一次性设置（GHCR 包已验证公开可匿名拉取，无需操作）：Actions 权限启用 "Require approval for all outside collaborators"；确认 secret scanning + push protection 已开启

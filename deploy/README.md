@@ -17,6 +17,8 @@
 
 ```bash
 mkdir -p /opt/virtual-biology-lab/{backups,deploy}
+# CD 的 self-hosted runner 以 ghrunner 用户执行 activate.sh，目录属主需为 ghrunner
+chown -R ghrunner:ghrunner /opt/virtual-biology-lab
 cp .env.example /opt/virtual-biology-lab/.env  # 填写生产值后 chmod 600
 # PostgreSQL 容器（内网可达，不暴露端口）：
 docker run -d --name vlab-postgres --restart unless-stopped \
