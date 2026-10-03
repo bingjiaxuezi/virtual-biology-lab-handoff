@@ -72,8 +72,17 @@ jobs:
           OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
+          # 服务器到 ghcr.io 带宽极差（旧项目踩坑），优先走 ghcr 镜像站，失败回退直连
+          pull_image() {
+            img="$OWNER/vlab-$1:$TAG"
+            if docker pull "ghcr.nju.edu.cn/$img"; then
+              docker tag "ghcr.nju.edu.cn/$img" "$REGISTRY/$img"
+            else
+              docker pull "$REGISTRY/$img"
+            fi
+          }
           for target in api web studio; do
-            docker pull "$REGISTRY/$OWNER/vlab-$target:$TAG"
+            pull_image "$target"
           done
           # activate.sh 约定本地镜像名 vlab-api:<tag>，回滚指针也以此为准
           docker tag "$REGISTRY/$OWNER/vlab-api:$TAG" "vlab-api:$TAG"

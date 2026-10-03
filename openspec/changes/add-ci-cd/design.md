@@ -49,7 +49,7 @@ CI `secret-scan` job 两道闸：
 - 已核实：`apps/api/.env`（含真实 AI Key）从未进入 git 历史。
 
 ### D6: 全自动发布的关键——服务器 self-hosted runner
-在服务器上部署 GitHub Actions self-hosted runner（仅此仓库），部署 job `runs-on: [self-hosted, vlab-server]`。runner 主动出站连 GitHub 接取任务，**安全组与入站端口零改动**，天然绕开"runner 无法直连服务器"的约束。部署 job 内容：拉取三个 GHCR 镜像 → 执行 `/opt/virtual-biology-lab/deploy/activate.sh sha-<short-sha>`。
+在服务器上部署 GitHub Actions self-hosted runner（仅此仓库），部署 job `runs-on: [self-hosted, vlab-server]`。runner 主动出站连 GitHub 接取任务，**安全组与入站端口零改动**，天然绕开"runner 无法直连服务器"的约束。部署 job 内容：拉取三个 GHCR 镜像 → 执行 `/opt/virtual-biology-lab/deploy/activate.sh sha-<short-sha>`。拉取优先走 ghcr 镜像站（`ghcr.nju.edu.cn`，实测秒级完成），失败回退 ghcr.io 直连。
 - 安全约束（公开仓库必须做到）：
   - 部署 job 只由 `workflow_dispatch` 触发——fork PR 无法触发 `workflow_dispatch`，外部人员无法让代码在 runner 上执行；
   - 所有 PR/push 触发的 job 全部跑在 GitHub 托管 runner，`runs-on: self-hosted` 不出现在任何可被 PR 触发的工作流中；
