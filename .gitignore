@@ -5,6 +5,7 @@ coverage/
 .DS_Store
 .env
 scripts/forbidden-patterns.local.txt
+.tmp-*
 apps/api/src/generated/
 apps/api/storage/
 
