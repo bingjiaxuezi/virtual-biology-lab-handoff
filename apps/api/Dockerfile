@@ -25,6 +25,8 @@ COPY apps/api/prisma apps/api/prisma
 # 本地 .npmrc 的 store-dir 是 Windows 绝对路径，容器内改写为 Linux 路径
 RUN sed -i 's|^store-dir=.*|store-dir=/pnpm-store|' .npmrc && pnpm install --frozen-lockfile
 # 拷贝源码并构建（pnpm 拓扑序：先 packages 后 api）
+# 根 tsconfig.base.json 是各包 extends 的根基，必须随源码一起进入上下文
+COPY tsconfig.base.json ./
 COPY packages/ packages/
 COPY apps/api/ apps/api/
 RUN pnpm -r --filter "@virtual-biology-lab/api..." build
