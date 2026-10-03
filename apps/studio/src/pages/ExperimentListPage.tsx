@@ -5,6 +5,23 @@ import type { ExperimentRecord } from '../api/types';
 import { useAuth } from '../auth/auth';
 import { createBlankDefinition } from '../editor/blank';
 
+/** HTTP 非安全上下文下 crypto.randomUUID 不可用，需回退。 */
+function uuid(): string {
+  const c = globalThis.crypto;
+  if (typeof c?.randomUUID === 'function') return c.randomUUID();
+  if (typeof c?.getRandomValues === 'function') {
+    const b = c.getRandomValues(new Uint8Array(16));
+    b[6] = ((b[6] ?? 0) & 0x0f) | 0x40;
+    b[8] = ((b[8] ?? 0) & 0x3f) | 0x80;
+    const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (ch) => {
+    const r = (Math.random() * 16) | 0;
+    return (ch === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 /** 实验列表：新建 / 编辑 / 发布 / 删除 / 查看学生运行。 */
 export function ExperimentListPage() {
   const { logout } = useAuth();
@@ -24,10 +41,7 @@ export function ExperimentListPage() {
 
   const create = async () => {
     const title = newTitle.trim() || '未命名实验';
-    const result = await api.createExperiment(
-      title,
-      createBlankDefinition(title, crypto.randomUUID()),
-    );
+    const result = await api.createExperiment(title, createBlankDefinition(title, uuid()));
     setNewTitle('');
     navigate(`/experiments/${result.experiment.id}/edit`);
   };

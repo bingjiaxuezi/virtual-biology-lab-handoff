@@ -1,6 +1,18 @@
-/** 跨平台 UUID：浏览器/Node ≥19 都有 globalThis.crypto.randomUUID。 */
+/** 跨平台 UUID：优先 crypto.randomUUID（安全上下文/Node ≥19）；HTTP 非安全上下文回退 getRandomValues 拼 UUIDv4，最后 Math.random 兜底。 */
 function randomUUID(): string {
-  return globalThis.crypto.randomUUID();
+  const c = globalThis.crypto;
+  if (typeof c?.randomUUID === 'function') return c.randomUUID();
+  if (typeof c?.getRandomValues === 'function') {
+    const b = c.getRandomValues(new Uint8Array(16));
+    b[6] = ((b[6] ?? 0) & 0x0f) | 0x40;
+    b[8] = ((b[8] ?? 0) & 0x3f) | 0x80;
+    const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (ch) => {
+    const r = (Math.random() * 16) | 0;
+    return (ch === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
 }
 import { type CapabilityRegistry, defaultRegistry } from '@virtual-biology-lab/capability-registry';
 import type {
