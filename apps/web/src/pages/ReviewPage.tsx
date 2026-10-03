@@ -29,14 +29,17 @@ export function ReviewPage() {
     <div className="page">
       <h1>实验复盘</h1>
       <section className="node-panel">
+        <div className="review-hero">
+          <span className="review-score">{run.state.score}</span>
+          <span className="review-score-label">得分</span>
+        </div>
         <p>状态：{run.status}</p>
         {typeof outcome === 'string' ? <p className="outcome">结果：{outcome}</p> : null}
-        <p className="score">得分：{run.state.score}</p>
         <p>
           开始于 {new Date(run.startedAt).toLocaleString()}
           {run.completedAt ? ` · 完成于 ${new Date(run.completedAt).toLocaleString()}` : ''}
         </p>
-        <Link className="link-button" to="/">
+        <Link className="btn btn-secondary" to="/">
           返回实验目录
         </Link>
       </section>

@@ -24,6 +24,7 @@
 - `docs/domain/core-model.md`
 - `docs/domain/experiment-definition-v0.1.md`
 - `docs/domain/capability-registry-v0.1.md`
+- `docs/design/ui-guidelines.md`（涉及任何前端页面时必读）
 
 ## 复杂任务要求
 

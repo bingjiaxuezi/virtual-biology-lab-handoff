@@ -143,6 +143,9 @@ importers:
       bcryptjs:
         specifier: 'catalog:'
         version: 3.0.3
+      prisma:
+        specifier: 'catalog:'
+        version: 6.19.3(typescript@5.9.3)
       reflect-metadata:
         specifier: 'catalog:'
         version: 0.2.2
@@ -156,9 +159,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.0
-      prisma:
-        specifier: 'catalog:'
-        version: 6.19.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.23.15
@@ -171,6 +171,9 @@ importers:
 
   apps/studio:
     dependencies:
+      '@virtual-biology-lab/design-tokens':
+        specifier: workspace:*
+        version: link:../../packages/design-tokens
       '@virtual-biology-lab/experiment-events':
         specifier: workspace:*
         version: link:../../packages/experiment-events
@@ -235,6 +238,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@virtual-biology-lab/design-tokens':
+        specifier: workspace:*
+        version: link:../../packages/design-tokens
       '@virtual-biology-lab/experiment-schema':
         specifier: workspace:*
         version: link:../../packages/experiment-schema
@@ -303,6 +309,8 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 3.2.7(@types/node@24.19.0)(jiti@2.7.0)(jsdom@26.1.0)(tsx@4.23.15)
+
+  packages/design-tokens: {}
 
   packages/experiment-events:
     dependencies:

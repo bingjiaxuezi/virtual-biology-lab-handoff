@@ -16,7 +16,7 @@ export function ActionNodeView({ node, busy, onCommand, step, back }: NodeRender
         {!done ? (
           <button
             type="button"
-            className="primary"
+            className="btn btn-primary"
             disabled={busy}
             onClick={async () => {
               if (await onCommand({ type: 'PERFORM_ACTION' })) setDone(true);
@@ -27,7 +27,7 @@ export function ActionNodeView({ node, busy, onCommand, step, back }: NodeRender
         ) : (
           <button
             type="button"
-            className="primary"
+            className="btn btn-primary"
             disabled={busy}
             onClick={() => onCommand({ type: 'ADVANCE' })}
           >

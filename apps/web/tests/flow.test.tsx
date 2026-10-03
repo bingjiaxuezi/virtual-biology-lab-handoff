@@ -129,7 +129,8 @@ describe('student web flow (80℃ path)', () => {
     // END：变性结局 + 得分 10
     expect(await screen.findByText('实验完成')).toBeInTheDocument();
     expect(screen.getByText(/DENATURED/)).toBeInTheDocument();
-    expect(screen.getByText('得分：10')).toBeInTheDocument();
+    expect(screen.getByText('10')).toBeInTheDocument();
+    expect(screen.getByText('得分')).toBeInTheDocument();
 
     // 轨迹面板包含关键事件
     await waitFor(() => {

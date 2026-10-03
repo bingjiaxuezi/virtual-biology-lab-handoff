@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@virtual-biology-lab/experiment-schema": "workspace:*",
+    "@virtual-biology-lab/design-tokens": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "catalog:"

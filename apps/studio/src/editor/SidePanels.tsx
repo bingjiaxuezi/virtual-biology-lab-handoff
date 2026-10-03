@@ -73,7 +73,7 @@ export function VariablesPanel({
             <span className="tag">{variable.type}</span>
             <button
               type="button"
-              className="danger"
+              className="btn btn-danger btn-sm"
               onClick={() =>
                 onChange({
                   ...definition,
@@ -217,7 +217,7 @@ export function RulesPanel({
             <strong>{rule.id}</strong>
             <button
               type="button"
-              className="danger"
+              className="btn btn-danger btn-sm"
               onClick={() =>
                 onChange({ ...definition, rules: definition.rules.filter((r) => r.id !== rule.id) })
               }
@@ -275,7 +275,7 @@ export function RulesPanel({
               />
               <button
                 type="button"
-                className="danger"
+                className="btn btn-danger btn-sm"
                 disabled={rule.effects.length <= 1}
                 onClick={() =>
                   update({ ...rule, effects: rule.effects.filter((_, i) => i !== index) })
@@ -449,7 +449,7 @@ export function AssetsPanel({
             />
             <button
               type="button"
-              className="danger"
+              className="btn btn-danger btn-sm"
               onClick={() =>
                 onChange({
                   ...definition,

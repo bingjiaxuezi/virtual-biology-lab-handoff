@@ -33,7 +33,7 @@ export function RunsPage() {
   if (error) {
     return (
       <div className="page">
-        <p className="panel-hint error">{error}</p>
+        <p className="error-banner">{error}</p>
         <Link to="/">返回列表</Link>
       </div>
     );
@@ -48,38 +48,46 @@ export function RunsPage() {
         <h1>学生运行 · {experiment?.title ?? '…'}</h1>
       </header>
       {!runs && <p className="panel-hint">加载中…</p>}
-      {runs?.length === 0 && <p className="panel-hint">还没有学生运行过这个实验</p>}
+      {runs?.length === 0 && (
+        <div className="panel empty-state">
+          <p>还没有学生运行过这个实验</p>
+        </div>
+      )}
       <div className="runs-layout">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>学生</th>
-              <th>版本</th>
-              <th>状态</th>
-              <th>得分</th>
-              <th>开始时间</th>
-            </tr>
-          </thead>
-          <tbody>
-            {runs?.map((run) => (
-              <tr
-                key={run.runId}
-                className={run.runId === selectedRunId ? 'selected-row' : ''}
-                tabIndex={0}
-                onClick={() => setSelectedRunId(run.runId)}
-                onKeyDown={(e) => e.key === 'Enter' && setSelectedRunId(run.runId)}
-              >
-                <td>{run.studentId}</td>
-                <td>v{run.version}</td>
-                <td>{run.status}</td>
-                <td>{run.score ?? '—'}</td>
-                <td>{new Date(run.startedAt).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {runs && runs.length > 0 && (
+          <div className="panel table-panel runs-table-panel">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>学生</th>
+                  <th>版本</th>
+                  <th>状态</th>
+                  <th>得分</th>
+                  <th>开始时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                {runs?.map((run) => (
+                  <tr
+                    key={run.runId}
+                    className={run.runId === selectedRunId ? 'selected-row' : ''}
+                    tabIndex={0}
+                    onClick={() => setSelectedRunId(run.runId)}
+                    onKeyDown={(e) => e.key === 'Enter' && setSelectedRunId(run.runId)}
+                  >
+                    <td>{run.studentId}</td>
+                    <td>v{run.version}</td>
+                    <td>{run.status}</td>
+                    <td>{run.score ?? '—'}</td>
+                    <td>{new Date(run.startedAt).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         {selectedRunId && (
-          <div className="trail-panel">
+          <div className="panel trail-panel">
             <h3>事件轨迹</h3>
             {!events && <p className="panel-hint">加载中…</p>}
             {events && (

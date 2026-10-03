@@ -1,0 +1,58 @@
+/* AI 生物仿真实验平台 · 统一设计令牌
+ * 单一真值源：任何新颜色/尺寸先入此文件，组件只引用变量。
+ * 详见 docs/design/ui-guidelines.md
+ */
+:root {
+  /* 色彩 */
+  --color-bg: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f0f4f3;
+  --color-border: #d9dee4;
+  --color-text: #1d2733;
+  --color-text-muted: #5b6b7c;
+  --color-primary: #0f766e;
+  --color-primary-hover: #115e59;
+  --color-primary-soft: #e6f4f2;
+  --color-danger: #b42318;
+  --color-danger-soft: #fef2f2;
+  --color-warning: #b45309;
+  --color-warning-soft: #fdf4e7;
+  --color-success: #067647;
+  --color-success-soft: #ecf8f1;
+  --color-focus-ring: rgba(15, 118, 110, 0.35);
+  --color-media-backdrop: #101418;
+  --color-on-primary: #ffffff;
+  --color-info: #2f5cc4;
+  --color-info-soft: #e8eefc;
+  --color-surface-sunken: #f8fafc;
+  --color-danger-border: #f0c4bd;
+  --color-overlay: rgba(15, 23, 42, 0.45);
+
+  /* 间距刻度 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* 字号 */
+  --font-xs: 12px;
+  --font-sm: 13px;
+  --font-md: 14px;
+  --font-lg: 16px;
+  --font-xl: 18px;
+  --font-2xl: 22px;
+
+  /* 阴影（仅卡片一档） */
+  --shadow-card: 0 1px 3px rgba(29, 39, 51, 0.08);
+
+  /* 字体族 */
+  --font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}

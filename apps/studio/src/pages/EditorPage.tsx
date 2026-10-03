@@ -209,7 +209,7 @@ function EditorInner() {
           ← 列表
         </Link>
         <input
-          className="title-input"
+          className="input title-input"
           value={definition.metadata.title}
           onChange={(e) =>
             apply({ ...definition, metadata: { ...definition.metadata, title: e.target.value } })
@@ -225,19 +225,33 @@ function EditorInner() {
               </option>
             ))}
           </select>
-          <button type="button" onClick={() => apply(addNode(definition, newNodeType, genId('n')))}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => apply(addNode(definition, newNodeType, genId('n')))}
+          >
             + 节点
           </button>
-          <button type="button" disabled={saving} onClick={() => void save()}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={saving}
+            onClick={() => void save()}
+          >
             {saving ? '保存中…' : '保存'}
           </button>
-          <button type="button" onClick={() => setPreviewOpen(true)}>
+          <button type="button" className="btn btn-secondary" onClick={() => setPreviewOpen(true)}>
             试玩
           </button>
-          <button type="button" onClick={() => void publish()}>
+          <button type="button" className="btn btn-secondary" onClick={() => void publish()}>
             发布
           </button>
-          <button type="button" title="AI Copilot" onClick={() => setCopilotOpen(true)}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            title="AI Copilot"
+            onClick={() => setCopilotOpen(true)}
+          >
             ✨ AI
           </button>
         </div>

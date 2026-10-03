@@ -28,7 +28,7 @@ export function StartNodeView({
       <NodeActionBar step={step} busy={busy} canBack={back.canBack} onBack={back.onBack}>
         <button
           type="button"
-          className="primary"
+          className="btn btn-primary"
           disabled={busy}
           onClick={() => onCommand({ type: 'ADVANCE' })}
         >

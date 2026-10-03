@@ -11,12 +11,15 @@ export function EndNodeView({ node, state, busy, step, back }: NodeRendererProps
     <section className="node-panel">
       <h2>实验完成</h2>
       {typed.config?.outcome ? <p className="outcome">结果：{typed.config.outcome}</p> : null}
-      <p className="score">得分：{state.score}</p>
+      <div className="review-hero">
+        <span className="review-score">{state.score}</span>
+        <span className="review-score-label">得分</span>
+      </div>
       <NodeActionBar step={step} busy={busy} canBack={back.canBack} onBack={back.onBack}>
-        <Link className="primary link-button" to={`/runs/${runId}/review`}>
+        <Link className="btn btn-primary" to={`/runs/${runId}/review`}>
           查看实验复盘
         </Link>
-        <Link className="link-button" to="/">
+        <Link className="btn btn-secondary" to="/">
           返回实验目录
         </Link>
       </NodeActionBar>

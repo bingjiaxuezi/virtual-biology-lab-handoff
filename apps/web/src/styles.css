@@ -1,16 +1,3 @@
-:root {
-  --color-bg: #f6f7f9;
-  --color-surface: #ffffff;
-  --color-border: #d9dee4;
-  --color-text: #1d2733;
-  --color-text-muted: #5b6b7c;
-  --color-primary: #0f766e;
-  --color-primary-hover: #115e59;
-  --color-error-bg: #fef2f2;
-  --color-error-text: #b91c1c;
-  --color-accent: #b45309;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -19,7 +6,7 @@ body {
   margin: 0;
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  font-family: var(--font-family);
   line-height: 1.6;
 }
 
@@ -80,7 +67,8 @@ body {
   padding: 16px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .catalog-meta {
@@ -99,6 +87,11 @@ body {
 @media (max-width: 800px) {
   .run-layout {
     grid-template-columns: 1fr;
+  }
+
+  .catalog-item {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
@@ -138,29 +131,6 @@ body {
   padding-left: 20px;
 }
 
-button.primary,
-.link-button {
-  display: inline-block;
-  padding: 8px 20px;
-  border: none;
-  border-radius: 6px;
-  background: var(--color-primary);
-  color: #fff;
-  font-size: 14px;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-button.primary:hover:not(:disabled),
-.link-button:hover {
-  background: var(--color-primary-hover);
-}
-
-button.primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* 统一操作栏：回退固定左下，主操作固定右下 */
 .action-bar {
   display: flex;
@@ -184,35 +154,7 @@ button.primary:disabled {
   color: var(--color-text-muted);
 }
 
-/* 次级按钮（回退、AI 建议等）统一描边样式 */
-.back-button,
-.action-bar-right button:not(.primary),
-.ai-actions button,
-.ai-suggestion button {
-  padding: 8px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.back-button:hover:not(:disabled),
-.action-bar-right button:not(.primary):hover:not(:disabled),
-.ai-actions button:hover:not(:disabled),
-.ai-suggestion button:hover:not(:disabled) {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.back-button:disabled,
-.action-bar-right button:disabled,
-.ai-actions button:disabled,
-.ai-suggestion button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
+/* 次级按钮统一由 design-tokens 的 .btn-secondary 提供 */
 
 .node-panel textarea,
 .node-panel input[type="text"],
@@ -268,7 +210,7 @@ button.primary:disabled {
   padding: 4px 10px;
   border-radius: 4px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-size: 12px;
 }
 
@@ -288,7 +230,7 @@ button.primary:disabled {
   max-height: 60vh;
   object-fit: contain;
   border-radius: 8px;
-  background: #101418;
+  background: var(--color-media-backdrop);
   margin-bottom: 8px;
 }
 
@@ -315,27 +257,30 @@ a.media-zoom img.media-content {
 }
 
 .condition-current strong {
-  color: var(--color-accent);
+  color: var(--color-warning);
 }
 
 .outcome {
-  font-size: 16px;
+  font-size: var(--font-lg);
   font-weight: 600;
 }
 
-.score {
-  color: var(--color-accent);
-  font-weight: 600;
+.review-hero {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
-.error-banner {
-  padding: 10px 14px;
-  border-radius: 6px;
-  background: var(--color-error-bg);
-  color: var(--color-error-text);
+.review-score {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.1;
 }
 
-.empty-hint {
+.review-score-label {
+  font-size: var(--font-sm);
   color: var(--color-text-muted);
 }
 
@@ -412,7 +357,7 @@ a.media-zoom img.media-content {
   display: inline-block;
   font-size: 12px;
   color: var(--color-text-muted);
-  border: 1px solid var(--color-border, #d0d5dd);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   padding: 0 6px;
   margin-bottom: 4px;
@@ -424,7 +369,7 @@ a.media-zoom img.media-content {
 
 .ai-error {
   font-size: 13px;
-  color: #b42318;
+  color: var(--color-danger);
 }
 
 .ai-suggestion {

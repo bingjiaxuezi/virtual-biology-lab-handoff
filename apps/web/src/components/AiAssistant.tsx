@@ -65,6 +65,7 @@ export function AiAssistant({
         {showBriefing && (
           <button
             type="button"
+            className="btn btn-secondary"
             disabled={busy !== null}
             onClick={() => void call('briefing', () => api.aiBriefing(runId))}
           >
@@ -74,6 +75,7 @@ export function AiAssistant({
         {showHint && (
           <button
             type="button"
+            className="btn btn-secondary"
             disabled={busy !== null}
             onClick={() => void call('hint', () => api.aiHint(runId))}
           >
@@ -83,6 +85,7 @@ export function AiAssistant({
         {showReview && (
           <button
             type="button"
+            className="btn btn-secondary"
             disabled={busy !== null}
             onClick={() => void call('review', () => api.aiReview(runId))}
           >

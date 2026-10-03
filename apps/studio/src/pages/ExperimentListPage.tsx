@@ -65,58 +65,88 @@ export function ExperimentListPage() {
         <h1>实验管理</h1>
         <div className="topbar-actions">
           <input
+            className="input topbar-input"
             value={newTitle}
             placeholder="新实验标题"
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && void create()}
           />
-          <button type="button" onClick={() => void create()}>
+          <button type="button" className="btn btn-primary" onClick={() => void create()}>
             新建实验
           </button>
-          <button type="button" onClick={logout}>
+          <button type="button" className="btn btn-secondary" onClick={logout}>
             退出登录
           </button>
         </div>
       </header>
-      {error && <p className="panel-hint error">{error}</p>}
-      {notice && <p className="panel-hint ok">{notice}</p>}
+      {error && <p className="error-banner">{error}</p>}
+      {notice && <p className="notice-banner">{notice}</p>}
       {!experiments && <p className="panel-hint">加载中…</p>}
-      {experiments?.length === 0 && <p className="panel-hint">还没有实验，点击「新建实验」开始</p>}
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>标题</th>
-            <th>草稿更新</th>
-            <th>已发布版本</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {experiments?.map((experiment) => {
-            const latest = experiment.versions.reduce(
-              (max, v) => (v.version > (max?.version ?? 0) ? v : max),
-              experiment.versions[0],
-            );
-            return (
-              <tr key={experiment.id}>
-                <td>{experiment.title}</td>
-                <td>{new Date(experiment.updatedAt).toLocaleString()}</td>
-                <td>{latest ? `v${latest.version}` : '未发布'}</td>
-                <td className="row-actions">
-                  <Link to={`/experiments/${experiment.id}/edit`}>编辑</Link>
-                  <button type="button" onClick={() => void publish(experiment)}>
-                    发布
-                  </button>
-                  <Link to={`/experiments/${experiment.id}/runs`}>学生运行</Link>
-                  <button type="button" className="danger" onClick={() => void remove(experiment)}>
-                    删除
-                  </button>
-                </td>
+      {experiments?.length === 0 && (
+        <div className="panel empty-state">
+          <p>还没有实验</p>
+          <button type="button" className="btn btn-primary" onClick={() => void create()}>
+            新建第一个实验
+          </button>
+        </div>
+      )}
+      {experiments && experiments.length > 0 && (
+        <div className="panel table-panel">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>标题</th>
+                <th>草稿更新</th>
+                <th>已发布版本</th>
+                <th>操作</th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {experiments?.map((experiment) => {
+                const latest = experiment.versions.reduce(
+                  (max, v) => (v.version > (max?.version ?? 0) ? v : max),
+                  experiment.versions[0],
+                );
+                return (
+                  <tr key={experiment.id}>
+                    <td>{experiment.title}</td>
+                    <td>{new Date(experiment.updatedAt).toLocaleString()}</td>
+                    <td>{latest ? `v${latest.version}` : '未发布'}</td>
+                    <td className="row-actions">
+                      <Link
+                        className="btn btn-secondary btn-sm"
+                        to={`/experiments/${experiment.id}/edit`}
+                      >
+                        编辑
+                      </Link>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => void publish(experiment)}
+                      >
+                        发布
+                      </button>
+                      <Link
+                        className="btn btn-secondary btn-sm"
+                        to={`/experiments/${experiment.id}/runs`}
+                      >
+                        学生运行
+                      </Link>
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => void remove(experiment)}
+                      >
+                        删除
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

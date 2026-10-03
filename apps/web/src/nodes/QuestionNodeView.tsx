@@ -42,7 +42,7 @@ export function QuestionNodeView({ node, busy, onCommand, step, back }: NodeRend
         {!done ? (
           <button
             type="button"
-            className="primary"
+            className="btn btn-primary"
             disabled={busy || !answer.trim()}
             onClick={async () => {
               if (await onCommand({ type: 'ANSWER_QUESTION', answer })) setDone(true);
@@ -53,7 +53,7 @@ export function QuestionNodeView({ node, busy, onCommand, step, back }: NodeRend
         ) : (
           <button
             type="button"
-            className="primary"
+            className="btn btn-primary"
             disabled={busy}
             onClick={() => onCommand({ type: 'ADVANCE' })}
           >

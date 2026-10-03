@@ -16,7 +16,12 @@ export function NodeActionBar({ step, busy, canBack, onBack, children }: NodeAct
   return (
     <div className="action-bar">
       <div className="action-bar-left">
-        <button type="button" className="back-button" disabled={busy || !canBack} onClick={onBack}>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          disabled={busy || !canBack}
+          onClick={onBack}
+        >
           ← 回退
         </button>
         <span className="step-hint">第 {step} 步</span>

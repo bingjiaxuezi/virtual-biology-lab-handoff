@@ -37,7 +37,9 @@ export function CatalogPage() {
       {items === null ? (
         <p>加载中……</p>
       ) : items.length === 0 ? (
-        <p className="empty-hint">还没有已发布的实验，请等待教师发布。</p>
+        <div className="panel empty-state">
+          <p>还没有已发布的实验，请等待教师发布。</p>
+        </div>
       ) : (
         <ul className="catalog-list">
           {items.map((item) => (
@@ -51,7 +53,7 @@ export function CatalogPage() {
               </div>
               <button
                 type="button"
-                className="primary"
+                className="btn btn-primary"
                 disabled={startingId !== null}
                 onClick={() => startExperiment(item)}
               >

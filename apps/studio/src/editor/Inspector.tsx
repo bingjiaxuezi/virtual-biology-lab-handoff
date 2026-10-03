@@ -282,7 +282,7 @@ function NodeForm({
         </Field>
       )}
 
-      <button type="button" className="danger" onClick={() => onRemove(node.id)}>
+      <button type="button" className="btn btn-danger btn-sm" onClick={() => onRemove(node.id)}>
         删除节点（级联删除相关连线）
       </button>
     </div>
@@ -341,7 +341,11 @@ function TransitionForm({
           onChange={(condition) => onUpdate({ ...transition, condition })}
         />
       )}
-      <button type="button" className="danger" onClick={() => onRemove(transition.id)}>
+      <button
+        type="button"
+        className="btn btn-danger btn-sm"
+        onClick={() => onRemove(transition.id)}
+      >
         删除连线
       </button>
     </div>

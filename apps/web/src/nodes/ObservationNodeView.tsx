@@ -46,14 +46,19 @@ export function ObservationNodeView({ node, busy, onCommand, step, back, ai }: N
       />
       <NodeActionBar step={step} busy={busy} canBack={back.canBack} onBack={back.onBack}>
         {ai?.observationAssistEnabled && !done && (
-          <button type="button" disabled={busy || aiBusy} onClick={() => void askAssist()}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled={busy || aiBusy}
+            onClick={() => void askAssist()}
+          >
             {aiBusy ? '思考中…' : 'AI 完善建议'}
           </button>
         )}
         {!done ? (
           <button
             type="button"
-            className="primary"
+            className="btn btn-primary"
             disabled={busy || !text.trim()}
             onClick={async () => {
               if (await onCommand({ type: 'SUBMIT_OBSERVATION', text })) setDone(true);
@@ -64,7 +69,7 @@ export function ObservationNodeView({ node, busy, onCommand, step, back, ai }: N
         ) : (
           <button
             type="button"
-            className="primary"
+            className="btn btn-primary"
             disabled={busy}
             onClick={() => onCommand({ type: 'ADVANCE' })}
           >
@@ -78,6 +83,7 @@ export function ObservationNodeView({ node, busy, onCommand, step, back, ai }: N
           <p>{suggestion}</p>
           <button
             type="button"
+            className="btn btn-secondary"
             onClick={() => {
               // 采纳 = 只填充输入框，学生可继续编辑，提交仍由学生触发
               // 已有内容时追加建议，避免覆盖学生自己的记录

@@ -44,7 +44,7 @@ export function VariableInputNodeView({
         {!done ? (
           <button
             type="button"
-            className="primary"
+            className="btn btn-primary"
             disabled={busy}
             onClick={async () => {
               if (await onCommand({ type: 'SET_VARIABLE', variableId: variable.id, value })) {
@@ -57,7 +57,7 @@ export function VariableInputNodeView({
         ) : (
           <button
             type="button"
-            className="primary"
+            className="btn btn-primary"
             disabled={busy}
             onClick={() => onCommand({ type: 'ADVANCE' })}
           >

@@ -33,7 +33,10 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={submit}>
-        <h1>教师端</h1>
+        <div className="login-brand">
+          <h1>生物仿真实验平台</h1>
+          <p>教师端</p>
+        </div>
         <div className="segmented">
           <button
             type="button"
@@ -53,6 +56,7 @@ export function LoginPage() {
         <label className="field">
           <span>用户名</span>
           <input
+            className="input"
             value={username}
             minLength={3}
             maxLength={32}
@@ -63,6 +67,7 @@ export function LoginPage() {
         <label className="field">
           <span>密码（至少 8 位）</span>
           <input
+            className="input"
             type="password"
             value={password}
             minLength={8}
@@ -71,8 +76,10 @@ export function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
-        {error && <p className="panel-hint error">{error}</p>}
-        <button type="submit" disabled={busy}>
+        <p className="login-error" role="alert">
+          {error ?? ''}
+        </p>
+        <button type="submit" className="btn btn-primary" disabled={busy}>
           {busy ? '请稍候…' : mode === 'login' ? '登录' : '注册并登录'}
         </button>
       </form>
