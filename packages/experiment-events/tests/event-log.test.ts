@@ -17,7 +17,7 @@ function makeEvent(runId: string, type: (typeof EXPERIMENT_EVENT_TYPES)[number])
 
 describe('experiment-events', () => {
   it('supports all 14 core event types, serializable without loss', () => {
-    expect(EXPERIMENT_EVENT_TYPES).toHaveLength(15);
+    expect(EXPERIMENT_EVENT_TYPES).toHaveLength(16);
     for (const type of EXPERIMENT_EVENT_TYPES) {
       const event = {
         eventId: 'e1',

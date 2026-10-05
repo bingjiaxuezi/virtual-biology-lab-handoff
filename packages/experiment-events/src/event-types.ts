@@ -11,6 +11,7 @@ export const experimentEventTypeSchema = z.enum([
   'RULE_APPLIED',
   'TRANSITION_TAKEN',
   'STEPPED_BACK',
+  'JUMPED_TO',
   'AI_BRIEFING_VIEWED',
   'AI_HINT_REQUESTED',
   'AI_HINT_SHOWN',

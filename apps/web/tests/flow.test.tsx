@@ -128,15 +128,15 @@ describe('student web flow (80℃ path)', () => {
 
     // END：变性结局 + 得分 10
     expect(await screen.findByText('实验完成')).toBeInTheDocument();
-    expect(screen.getByText(/DENATURED/)).toBeInTheDocument();
+    expect(screen.getAllByText(/DENATURED/).length).toBeGreaterThan(0);
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('得分')).toBeInTheDocument();
 
-    // 轨迹面板包含关键事件
+    // 轨迹面板包含关键事件（可读摘要，不暴露内部 ID）
     await waitFor(() => {
-      expect(screen.getAllByText('变量变化').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('规则生效').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('提交观察').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('温度（temperature） → 80').length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/得分 \+10/).length).toBeGreaterThan(0);
+      expect(screen.getAllByText('提交观察「记录实验现象」').length).toBeGreaterThan(0);
     });
 
     // 复盘页

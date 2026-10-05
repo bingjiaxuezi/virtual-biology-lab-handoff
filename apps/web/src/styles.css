@@ -79,20 +79,9 @@ body {
 
 .run-layout {
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: 20px;
   align-items: start;
-}
-
-@media (max-width: 800px) {
-  .run-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .catalog-item {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
 
 .run-main,
@@ -100,6 +89,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
 }
 
 @media (min-width: 801px) {
@@ -284,12 +274,142 @@ a.media-zoom img.media-content {
   color: var(--color-text-muted);
 }
 
-.event-trail,
 .ai-assistant {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 16px;
+}
+
+/* ---------- 侧栏页签面板（轨迹 / 背包） ---------- */
+.side-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-toggle {
+  display: none;
+}
+
+.side-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.side-tabs button {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: var(--font-md);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.side-tabs button.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.side-content {
+  padding: 12px 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* ---------- 里程碑进度条 ---------- */
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.progress-bar {
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.progress-step {
+  display: inline-flex;
+  align-items: flex-start;
+  flex: 0 0 auto;
+}
+
+.progress-link {
+  width: 24px;
+  height: 2px;
+  background: var(--color-border);
+  margin-top: 11px;
+}
+
+.progress-link.done {
+  background: var(--color-primary);
+}
+
+.progress-milestone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.progress-dot.done {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.progress-dot.current {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.progress-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  max-width: 84px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-count {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  flex: 0 0 auto;
 }
 
 .event-trail h3,
@@ -336,6 +456,67 @@ a.media-zoom img.media-content {
   color: var(--color-text-muted);
 }
 
+.event-item.current {
+  background: var(--color-primary-soft);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+
+.event-jump {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--color-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.event-jump:hover {
+  text-decoration: underline;
+}
+
+.event-summary {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- 背包 ---------- */
+.backpack-section h4 {
+  margin: var(--space-3) 0 var(--space-2);
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+}
+
+.backpack-section ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.backpack-section li {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.backpack-section li strong {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.backpack-section li p {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .event-empty,
 .ai-assistant p {
   font-size: 13px;
@@ -351,6 +532,31 @@ a.media-zoom img.media-content {
 
 .ai-text {
   line-height: 1.6;
+}
+
+.ai-text p {
+  margin: 0 0 8px;
+}
+
+.ai-text p:last-child {
+  margin-bottom: 0;
+}
+
+.ai-text ul,
+.ai-text ol {
+  margin: 4px 0 8px;
+  padding-left: 20px;
+}
+
+.ai-text li {
+  margin: 2px 0;
+}
+
+.ai-text code {
+  background: var(--color-surface-sunken);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 13px;
 }
 
 .ai-text-kind {
@@ -383,4 +589,58 @@ a.media-zoom img.media-content {
   margin: 0 0 8px;
   font-size: 13px;
   line-height: 1.6;
+}
+
+/* ---------- 移动端适配（放在文件末尾，确保覆盖同名基础规则） ---------- */
+@media (max-width: 800px) {
+  .run-layout {
+    grid-template-columns: minmax(0, 1fr);
+    /* 给底部抽屉留出空间，避免遮挡操作栏 */
+    padding-bottom: 56px;
+  }
+
+  /* 轨迹/背包改为底部抽屉 */
+  .run-side .side-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+  }
+
+  .drawer-toggle {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: var(--color-surface);
+    border: none;
+    font-size: var(--font-md);
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  .run-side .side-panel .side-panel-body {
+    display: none;
+  }
+
+  .run-side .side-panel.open .side-panel-body {
+    display: block;
+    max-height: 55vh;
+    overflow-y: auto;
+  }
+
+  .progress-wrap {
+    padding: 8px 10px;
+  }
+
+  .progress-label {
+    max-width: 64px;
+  }
+
+  .catalog-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

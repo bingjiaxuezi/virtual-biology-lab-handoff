@@ -4,7 +4,9 @@ import { useParams } from 'react-router-dom';
 import { api } from '../api/client';
 import type { RunEvent, RunView, RuntimeCommand } from '../api/types';
 import { AiAssistant } from '../components/AiAssistant';
-import { EventTrail } from '../components/EventTrail';
+import { ProgressBar } from '../components/ProgressBar';
+import { RunSidePanel } from '../components/RunSidePanel';
+import { collectBackpack, visitStackOf } from '../lib/run-derive';
 import { getNodeRenderer } from '../nodes/registry';
 
 const POLL_INTERVAL_MS = 3000;
@@ -87,18 +89,24 @@ export function RunPage() {
   const node = definition.nodes.find((n) => n.id === run.currentNodeId);
   if (!node) return <p className="error-banner">当前节点不在实验定义中：{run.currentNodeId}</p>;
 
-  // 访问栈深度 = 进入节点数 - 回退次数，即「第 N 步」；起点或已结束不可回退
-  const enteredCount = events.filter((event) => event.type === 'NODE_ENTERED').length;
-  const backedCount = events.filter((event) => event.type === 'STEPPED_BACK').length;
-  const step = Math.max(1, enteredCount - backedCount);
+  // 访问栈深度 = 「第 N 步」；与 Runtime 一致兼容跳转（JUMPED_TO 弹栈至目标）
+  const step = Math.max(1, visitStackOf(events).length);
+  const backpackCount = (() => {
+    const bag = collectBackpack(events, definition);
+    return bag.observations.length + bag.questions.length + bag.variables.length;
+  })();
   const canBack = run.status === 'RUNNING' && step > 1;
   const back = { canBack, onBack: () => void sendCommand({ type: 'BACK' }) };
 
   const Renderer = getNodeRenderer(node.type);
 
+  const canJump = run.status === 'RUNNING';
+  const onJump = (nodeId: string) => void sendCommand({ type: 'JUMP_TO', nodeId });
+
   return (
     <div className="run-layout">
       <div className="run-main">
+        <ProgressBar definition={definition} events={events} currentNodeId={run.currentNodeId} />
         {error ? <p className="error-banner">{error}</p> : null}
         <Renderer
           key={run.currentNodeId}
@@ -113,7 +121,14 @@ export function RunPage() {
         />
       </div>
       <div className="run-side">
-        <EventTrail events={events} />
+        <RunSidePanel
+          events={events}
+          definition={definition}
+          currentNodeId={run.currentNodeId}
+          canJump={canJump}
+          onJump={onJump}
+          backpackCount={backpackCount}
+        />
         <AiAssistant runId={runId} node={node} definition={definition} status={run.status} />
       </div>
     </div>

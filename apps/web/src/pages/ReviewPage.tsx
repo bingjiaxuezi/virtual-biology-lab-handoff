@@ -1,26 +1,31 @@
+import type { ExperimentDefinition } from '@virtual-biology-lab/experiment-schema';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api/client';
 import type { RunEvent, RunView } from '../api/types';
+import { Backpack } from '../components/Backpack';
 import { EventTrail } from '../components/EventTrail';
 
 export function ReviewPage() {
   const { runId = '' } = useParams<{ runId: string }>();
   const [run, setRun] = useState<RunView | null>(null);
   const [events, setEvents] = useState<RunEvent[]>([]);
+  const [definition, setDefinition] = useState<ExperimentDefinition | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([api.getRun(runId), api.getEvents(runId)])
-      .then(([runView, eventList]) => {
+      .then(async ([runView, eventList]) => {
+        const version = await api.getVersion(runView.experimentVersionId);
         setRun(runView);
         setEvents(eventList);
+        setDefinition(version.definition);
       })
       .catch((cause: Error) => setError(cause.message));
   }, [runId]);
 
   if (error) return <p className="error-banner">{error}</p>;
-  if (!run) return <p>加载中……</p>;
+  if (!run || !definition) return <p>加载中……</p>;
 
   const completedEvent = events.find((event) => event.type === 'RUN_COMPLETED');
   const outcome = completedEvent?.payload.outcome;
@@ -43,7 +48,20 @@ export function ReviewPage() {
           返回实验目录
         </Link>
       </section>
-      <EventTrail events={events} />
+      <div className="panel">
+        <h3>事件轨迹</h3>
+        <EventTrail
+          events={events}
+          definition={definition}
+          currentNodeId={run.currentNodeId}
+          canJump={false}
+          onJump={() => undefined}
+        />
+      </div>
+      <div className="panel">
+        <h3>实验记录背包</h3>
+        <Backpack events={events} definition={definition} />
+      </div>
     </div>
   );
 }

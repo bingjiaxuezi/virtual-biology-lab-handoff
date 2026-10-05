@@ -226,6 +226,12 @@ export function createExperimentRuntime(options: {
     for (const event of await eventLog.getByRun(record.runId)) {
       if (event.type === 'NODE_ENTERED' && event.nodeId) stack.push(event.nodeId);
       else if (event.type === 'STEPPED_BACK') stack.pop();
+      else if (event.type === 'JUMPED_TO') {
+        // 读档跳转：弹栈至目标节点（目标必定在栈中，跳转前已校验为已访问）
+        const to = event.payload.to;
+        const idx = typeof to === 'string' ? stack.lastIndexOf(to) : -1;
+        if (idx >= 0) stack.length = idx + 1;
+      }
     }
     if (stack.length < 2) return fail('No earlier node to step back to');
     const from = stack.pop();
@@ -233,6 +239,30 @@ export function createExperimentRuntime(options: {
     if (from === undefined || to === undefined) return fail('No earlier node to step back to');
     record.actor.send({ type: 'RESTORE_TO', nodeId: to });
     return { ok: true, events: [await emit(record, 'STEPPED_BACK', { from, to }, to)] };
+  }
+
+  /**
+   * JUMP_TO：读档跳转到本 Run 已进入过的任意节点。
+   * 与 BACK 同样不回滚变量/分数，只追加 JUMPED_TO 事实。
+   */
+  async function handleJumpTo(
+    record: RunRecord,
+    command: Extract<RuntimeCommand, { type: 'JUMP_TO' }>,
+  ): Promise<DispatchResult> {
+    const visited = new Set<string>();
+    for (const event of await eventLog.getByRun(record.runId)) {
+      if (event.type === 'NODE_ENTERED' && event.nodeId) visited.add(event.nodeId);
+    }
+    const from = currentNodeId(record);
+    if (!visited.has(command.nodeId)) {
+      return fail(`Node "${command.nodeId}" has not been visited in this run`);
+    }
+    if (command.nodeId === from) return fail('Already at this node');
+    record.actor.send({ type: 'RESTORE_TO', nodeId: command.nodeId });
+    return {
+      ok: true,
+      events: [await emit(record, 'JUMPED_TO', { from, to: command.nodeId }, command.nodeId)],
+    };
   }
 
   async function handleSetVariable(
@@ -418,6 +448,8 @@ export function createExperimentRuntime(options: {
           return handleAdvance(record);
         case 'BACK':
           return handleBack(record);
+        case 'JUMP_TO':
+          return handleJumpTo(record, command);
         default:
           return fail(`Unknown command type "${String((command as { type: unknown }).type)}"`);
       }

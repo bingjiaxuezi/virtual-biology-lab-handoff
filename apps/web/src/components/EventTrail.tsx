@@ -1,41 +1,76 @@
+import type { ExperimentDefinition } from '@virtual-biology-lab/experiment-schema';
 import type { RunEvent } from '../api/types';
+import { summarizeEvent } from '../lib/run-derive';
 
-const EVENT_LABEL: Record<string, string> = {
-  RUN_STARTED: '开始实验',
-  NODE_ENTERED: '进入节点',
-  STEPPED_BACK: '回退上一步',
-  ACTION_PERFORMED: '执行操作',
-  VARIABLE_CHANGED: '变量变化',
-  OBSERVATION_SUBMITTED: '提交观察',
-  QUESTION_ANSWERED: '回答问题',
-  RULE_APPLIED: '规则生效',
-  TRANSITION_TAKEN: '流程推进',
-  AI_BRIEFING_VIEWED: '查看 AI 导学',
-  AI_HINT_REQUESTED: '请求 AI 提示',
-  AI_HINT_SHOWN: 'AI 提示',
-  AI_OBSERVATION_ASSISTED: 'AI 观察辅助',
-  AI_REVIEW_GENERATED: 'AI 复盘',
-  RUN_COMPLETED: '完成实验',
-};
+export interface EventTrailProps {
+  events: RunEvent[];
+  definition: ExperimentDefinition;
+  currentNodeId: string;
+  /** 运行中才可点击跳转（读档） */
+  canJump: boolean;
+  onJump: (nodeId: string) => void;
+}
 
-export function EventTrail({ events }: { events: RunEvent[] }) {
+/** 事件轨迹：节点标题 + 操作摘要，历史导航事件可点击读档，当前位置高亮。 */
+export function EventTrail({
+  events,
+  definition,
+  currentNodeId,
+  canJump,
+  onJump,
+}: EventTrailProps) {
+  // 最近一次导航事件（当前位置）
+  const navEvents = events.filter(
+    (e) => e.type === 'NODE_ENTERED' || e.type === 'STEPPED_BACK' || e.type === 'JUMPED_TO',
+  );
+  const currentEventId = navEvents[navEvents.length - 1]?.eventId;
+
+  const visible = events.filter((e) => summarizeEvent(e, definition) !== null);
+
   return (
-    <aside className="event-trail" aria-label="事件轨迹">
-      <h3>事件轨迹</h3>
-      {events.length === 0 ? (
+    <div className="event-trail" aria-label="事件轨迹">
+      {visible.length === 0 ? (
         <p className="event-empty">还没有事件</p>
       ) : (
         <ol className="event-list">
-          {[...events].reverse().map((event) => (
-            <li key={event.eventId} className="event-item">
-              <span className="event-sequence">#{event.sequence}</span>
-              <span className="event-type">{EVENT_LABEL[event.type] ?? event.type}</span>
-              {event.nodeId ? <span className="event-node">{event.nodeId}</span> : null}
-              <time>{new Date(event.timestamp).toLocaleTimeString()}</time>
-            </li>
-          ))}
+          {[...visible].reverse().map((event) => {
+            const jumpTarget =
+              event.type === 'NODE_ENTERED'
+                ? event.nodeId
+                : event.type === 'STEPPED_BACK' || event.type === 'JUMPED_TO'
+                  ? typeof event.payload.to === 'string'
+                    ? event.payload.to
+                    : undefined
+                  : undefined;
+            const jumpable =
+              canJump &&
+              jumpTarget !== undefined &&
+              jumpTarget !== currentNodeId &&
+              event.eventId !== currentEventId;
+            const isCurrent = event.eventId === currentEventId;
+            return (
+              <li
+                key={event.eventId}
+                className={`event-item${isCurrent ? ' current' : ''}${jumpable ? ' jumpable' : ''}`}
+              >
+                {jumpable ? (
+                  <button
+                    type="button"
+                    className="event-jump"
+                    onClick={() => onJump(jumpTarget)}
+                    title="回到这一步"
+                  >
+                    {summarizeEvent(event, definition)}
+                  </button>
+                ) : (
+                  <span className="event-summary">{summarizeEvent(event, definition)}</span>
+                )}
+                <time>{new Date(event.timestamp).toLocaleTimeString()}</time>
+              </li>
+            );
+          })}
         </ol>
       )}
-    </aside>
+    </div>
   );
 }
