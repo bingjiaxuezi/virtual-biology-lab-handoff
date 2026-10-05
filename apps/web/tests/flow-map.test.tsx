@@ -1,8 +1,8 @@
 /**
- * 进度导航包测试：里程碑进度条三态、轨迹跳转读档、背包聚合。
- * 复用 flow.test.tsx 的内存版后端模式。
+ * 战争迷雾流程图测试：迷雾占位与防泄露、探索解锁、点击读档跳转、背包与抽屉。
+ * 复用内存版后端模式（与 flow.test.tsx 相同）。
  */
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { InMemoryEventLog } from '@virtual-biology-lab/experiment-events';
 import { createExperimentRuntime } from '@virtual-biology-lab/experiment-runtime';
 import { MemoryRouter } from 'react-router-dom';
@@ -93,7 +93,12 @@ async function enterRun() {
   await screen.findByText('进入实验');
 }
 
-describe('进度导航包', () => {
+/** 流程图容器内的查询器。 */
+function mapScope() {
+  return within(screen.getByLabelText('实验流程图'));
+}
+
+describe('战争迷雾流程图', () => {
   beforeEach(() => {
     localStorage.clear();
     installFakeServer();
@@ -103,89 +108,70 @@ describe('进度导航包', () => {
     vi.unstubAllGlobals();
   });
 
-  it('里程碑进度条：起点高亮，刻度计数随推进增长', async () => {
+  it('迷雾占位：未访问节点只显示类型与 ???，DOM 不含真实标题；探索后解锁', async () => {
     await enterRun();
 
-    // 最长主路径 6 个里程碑：开始/设置温度/判断/媒体/观察/结束
-    expect(await screen.findByLabelText('实验进度')).toBeInTheDocument();
-    expect(screen.getByText('1/6')).toBeInTheDocument();
-    expect(screen.getByTitle('设置实验温度')).toHaveClass('todo');
+    const map = mapScope();
+    // 8 节点：当前「开始」可见（类型徽标 + 标题两处），其余 7 个迷雾占位
+    expect(map.getAllByText('开始').length).toBeGreaterThanOrEqual(1);
+    expect(map.getAllByText('???')).toHaveLength(7);
+    expect(map.queryByText('设置实验温度')).toBeNull();
+    expect(map.queryByText('记录实验现象')).toBeNull();
+    expect(screen.getByText('已探索 1/8')).toBeInTheDocument();
 
-    // 推进到设置温度
-    fireEvent.click(await screen.findByText('进入实验'));
-    expect(await screen.findByText('2/6')).toBeInTheDocument();
-    expect(screen.getByTitle('设置实验温度')).toHaveClass('current');
-    expect(screen.getByTitle('开始')).toHaveClass('done');
+    // 推进：设置温度节点解锁
+    fireEvent.click(screen.getByText('进入实验'));
+    await waitFor(() => {
+      expect(map.getByText('设置实验温度')).toBeInTheDocument();
+    });
+    expect(map.getAllByText('???')).toHaveLength(6);
+    expect(screen.getByText('已探索 2/8')).toBeInTheDocument();
   });
 
-  it('事件轨迹：显示节点标题摘要，点击历史条目读档跳转', async () => {
+  it('点击已访问节点读档跳转；迷雾节点不可点', async () => {
     await enterRun();
-    fireEvent.click(await screen.findByText('进入实验'));
+    fireEvent.click(screen.getByText('进入实验'));
+    const map = mapScope();
+    await waitFor(() => {
+      expect(map.getByText('设置实验温度')).toBeInTheDocument();
+    });
 
-    // 设置 80℃ 后继续到判断节点
+    // 迷雾节点点击无效果（无任何命令，仍在变量节点）
+    fireEvent.click(map.getAllByText('???')[0]!);
+    expect(screen.queryByText('进入实验')).toBeNull();
+
+    // 点击已访问的「开始」节点 → JUMP_TO 回到起点（徽标与标题同名，取其一）
+    fireEvent.click(map.getAllByText('开始')[0]!);
+    await waitFor(() => {
+      expect(screen.getByText('进入实验')).toBeInTheDocument();
+    });
+    expect(screen.getByText('已探索 2/8')).toBeInTheDocument();
+  });
+
+  it('背包聚合记录；移动端抽屉开合', async () => {
+    await enterRun();
+
+    // 背包默认空态
+    expect(screen.getByText('背包还是空的')).toBeInTheDocument();
+
+    // 设置 80℃ 触发规则 → 2 条变量记录
+    fireEvent.click(screen.getByText('进入实验'));
     const slider = await screen.findByLabelText('温度');
     fireEvent.change(slider, { target: { value: '80' } });
     fireEvent.click(screen.getByText('确认'));
-    fireEvent.click(await screen.findByText('继续'));
-    expect(await screen.findByText('查看结果')).toBeInTheDocument();
-
-    // 轨迹出现可读摘要而非内部 ID
     await waitFor(() => {
-      expect(screen.getAllByText('进入「开始」').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('温度（temperature） → 80').length).toBeGreaterThan(0);
+      expect(screen.getByText('温度（temperature）')).toBeInTheDocument();
     });
-    expect(screen.queryByText('check_temp')).toBeNull();
-
-    // 点击历史「进入 开始」→ JUMP_TO 回到 start 节点
-    fireEvent.click(screen.getAllByText('进入「开始」')[0]!);
-    await waitFor(() => {
-      expect(screen.getAllByText(/跳转到「开始」/).length).toBeGreaterThan(0);
-    });
-    // 回到 START 节点：主按钮回到「进入实验」
-    expect(await screen.findByText('进入实验')).toBeInTheDocument();
-  });
-
-  it('背包：聚合观察/问答/关键变量记录，空时空态', async () => {
-    await enterRun();
-
-    // 默认在轨迹页签，背包页签角标为 0
-    fireEvent.click(screen.getByRole('tab', { name: /背包/ }));
-    expect(await screen.findByText('背包还是空的')).toBeInTheDocument();
-
-    // 切回轨迹并推进产生记录
-    fireEvent.click(screen.getByRole('tab', { name: /轨迹/ }));
-    fireEvent.click(await screen.findByText('进入实验'));
-    const slider = await screen.findByLabelText('温度');
-    fireEvent.change(slider, { target: { value: '80' } });
-    fireEvent.click(screen.getByText('确认'));
-
-    // 设置 80°C 同时触发规则改变样本状态 → 2 条变量记录
-    fireEvent.click(await screen.findByRole('tab', { name: /背包 \(2\)/ }));
-    expect(await screen.findByText(/关键操作（2）/)).toBeInTheDocument();
-    expect(screen.getByText('温度（temperature）')).toBeInTheDocument();
     expect(screen.getByText(/→ 80/)).toBeInTheDocument();
     expect(screen.getByText('样本状态（sampleStatus）')).toBeInTheDocument();
-  });
 
-  it('侧栏：抽屉开合与页签切换', async () => {
-    await enterRun();
-
-    // 抽屉默认收起，点击后展开（class + aria-expanded 同步）
-    const toggle = screen.getByRole('button', { name: /轨迹 \d+ · 背包 \d+/ });
+    // 抽屉开合（≤800px 时可见的横条按钮，jsdom 中始终在 DOM）
+    const toggle = screen.getByRole('button', { name: /背包 \(\d+\)/ });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(toggle.closest('aside')).toHaveClass('open');
-
-    // 页签切换到背包再切回轨迹
-    fireEvent.click(screen.getByRole('tab', { name: /背包/ }));
-    expect(screen.getByRole('tab', { name: /背包/ })).toHaveAttribute('aria-selected', 'true');
-    fireEvent.click(screen.getByRole('tab', { name: /轨迹/ }));
-    expect(screen.getByRole('tab', { name: /轨迹/ })).toHaveAttribute('aria-selected', 'true');
-
-    // 再点一次收起
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    expect(toggle.closest('aside')).not.toHaveClass('open');
   });
 });

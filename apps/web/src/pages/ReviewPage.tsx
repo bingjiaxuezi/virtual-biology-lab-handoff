@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { api } from '../api/client';
 import type { RunEvent, RunView } from '../api/types';
 import { Backpack } from '../components/Backpack';
-import { EventTrail } from '../components/EventTrail';
+import { FlowMap } from '../components/FlowMap';
 
 export function ReviewPage() {
   const { runId = '' } = useParams<{ runId: string }>();
@@ -49,13 +49,14 @@ export function ReviewPage() {
         </Link>
       </section>
       <div className="panel">
-        <h3>事件轨迹</h3>
-        <EventTrail
-          events={events}
+        <h3>实验流程</h3>
+        <FlowMap
           definition={definition}
+          events={events}
           currentNodeId={run.currentNodeId}
           canJump={false}
           onJump={() => undefined}
+          revealAll
         />
       </div>
       <div className="panel">

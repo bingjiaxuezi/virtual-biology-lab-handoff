@@ -281,7 +281,7 @@ a.media-zoom img.media-content {
   padding: 16px;
 }
 
-/* ---------- 侧栏页签面板（轨迹 / 背包） ---------- */
+/* ---------- 侧栏背包面板 ---------- */
 .side-panel {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -295,190 +295,119 @@ a.media-zoom img.media-content {
   display: none;
 }
 
-.side-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.side-tabs button {
-  flex: 1;
-  padding: var(--space-2) var(--space-3);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  font-size: var(--font-md);
-  color: var(--color-text-muted);
-  cursor: pointer;
-}
-
-.side-tabs button.active {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
-  font-weight: 600;
-}
-
 .side-content {
   padding: 12px 16px;
   max-height: 60vh;
   overflow-y: auto;
 }
 
-/* ---------- 里程碑进度条 ---------- */
-.progress-wrap {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
+/* ---------- 战争迷雾流程图 ---------- */
+.flow-map {
+  height: 220px;
   min-width: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  padding: 10px 14px;
   box-shadow: var(--shadow-card);
+  overflow: hidden;
+  position: relative;
 }
 
-.progress-bar {
-  display: flex;
-  align-items: flex-start;
-  overflow-x: auto;
-  flex: 1;
-  min-width: 0;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.progress-step {
-  display: inline-flex;
-  align-items: flex-start;
-  flex: 0 0 auto;
-}
-
-.progress-link {
-  width: 24px;
-  height: 2px;
-  background: var(--color-border);
-  margin-top: 11px;
-}
-
-.progress-link.done {
-  background: var(--color-primary);
-}
-
-.progress-milestone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.progress-dot {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
+.flow-map .react-flow {
   background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-muted);
 }
 
-.progress-dot.done {
+.map-node {
+  width: 148px;
+  height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 12px;
+}
+
+.map-node-type {
+  flex: 0 0 auto;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
   background: var(--color-primary-soft);
-  border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
-.progress-dot.current {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
-  font-weight: 700;
-}
-
-.progress-label {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  max-width: 84px;
+.map-node-label {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.progress-count {
-  font-size: var(--font-sm);
-  color: var(--color-text-muted);
-  flex: 0 0 auto;
-}
-
-.event-trail h3,
-.ai-assistant h3 {
-  font-size: 14px;
-  margin: 0 0 10px;
-}
-
-.event-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 420px;
-  overflow-y: auto;
-}
-
-.event-item {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: baseline;
-  font-size: 12px;
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 6px;
-}
-
-.event-sequence {
+.map-node.fog {
+  border-style: dashed;
+  background: var(--color-bg);
   color: var(--color-text-muted);
 }
 
-.event-type {
+.map-node.fog .map-node-type {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.map-node.fog .map-node-label {
+  letter-spacing: 2px;
+}
+
+/* 连线锚点不可见 */
+.map-handle {
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  border: none;
+}
+
+.map-node.visited {
+  border-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.map-node.current {
+  border-color: var(--color-primary);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
   font-weight: 600;
 }
 
-.event-node {
-  color: var(--color-text-muted);
+.react-flow__edge.dim path {
+  stroke: var(--color-border);
+  stroke-dasharray: 4 3;
 }
 
-.event-item time {
-  margin-left: auto;
-  color: var(--color-text-muted);
+.react-flow__edge.lit path {
+  stroke: var(--color-primary);
+  stroke-width: 2;
 }
 
-.event-item.current {
-  background: var(--color-primary-soft);
+.map-badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 5;
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  padding: 4px 6px;
+  padding: 2px 8px;
 }
 
-.event-jump {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  color: var(--color-primary);
-  cursor: pointer;
-  text-align: left;
-}
-
-.event-jump:hover {
-  text-decoration: underline;
-}
-
-.event-summary {
-  flex: 1;
-  min-width: 0;
+.ai-assistant h3 {
+  font-size: 14px;
+  margin: 0 0 10px;
 }
 
 /* ---------- 背包 ---------- */
@@ -517,7 +446,6 @@ a.media-zoom img.media-content {
   word-break: break-word;
 }
 
-.event-empty,
 .ai-assistant p {
   font-size: 13px;
   color: var(--color-text-muted);
@@ -599,7 +527,7 @@ a.media-zoom img.media-content {
     padding-bottom: 56px;
   }
 
-  /* 轨迹/背包改为底部抽屉 */
+  /* 背包改为底部抽屉 */
   .run-side .side-panel {
     position: fixed;
     left: 0;
@@ -631,12 +559,8 @@ a.media-zoom img.media-content {
     overflow-y: auto;
   }
 
-  .progress-wrap {
-    padding: 8px 10px;
-  }
-
-  .progress-label {
-    max-width: 64px;
+  .flow-map {
+    height: 140px;
   }
 
   .catalog-item {

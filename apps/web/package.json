@@ -11,20 +11,24 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@virtual-biology-lab/experiment-schema": "workspace:*",
     "@virtual-biology-lab/design-tokens": "workspace:*",
+    "@virtual-biology-lab/experiment-schema": "workspace:*",
+    "@xyflow/react": "catalog:",
+    "dagre": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "catalog:"
   },
   "devDependencies": {
-    "@virtual-biology-lab/experiment-events": "workspace:*",
-    "@virtual-biology-lab/experiment-runtime": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
+    "@types/dagre": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@virtual-biology-lab/experiment-events": "workspace:*",
+    "@virtual-biology-lab/experiment-runtime": "workspace:*",
     "@vitejs/plugin-react": "catalog:",
     "jsdom": "catalog:",
     "typescript": "catalog:",

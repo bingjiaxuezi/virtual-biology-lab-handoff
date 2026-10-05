@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { api } from '../api/client';
 import type { RunEvent, RunView, RuntimeCommand } from '../api/types';
 import { AiAssistant } from '../components/AiAssistant';
-import { ProgressBar } from '../components/ProgressBar';
+import { FlowMap } from '../components/FlowMap';
 import { RunSidePanel } from '../components/RunSidePanel';
 import { collectBackpack, visitStackOf } from '../lib/run-derive';
 import { getNodeRenderer } from '../nodes/registry';
@@ -106,7 +106,13 @@ export function RunPage() {
   return (
     <div className="run-layout">
       <div className="run-main">
-        <ProgressBar definition={definition} events={events} currentNodeId={run.currentNodeId} />
+        <FlowMap
+          definition={definition}
+          events={events}
+          currentNodeId={run.currentNodeId}
+          canJump={canJump}
+          onJump={onJump}
+        />
         {error ? <p className="error-banner">{error}</p> : null}
         <Renderer
           key={run.currentNodeId}
@@ -121,14 +127,7 @@ export function RunPage() {
         />
       </div>
       <div className="run-side">
-        <RunSidePanel
-          events={events}
-          definition={definition}
-          currentNodeId={run.currentNodeId}
-          canJump={canJump}
-          onJump={onJump}
-          backpackCount={backpackCount}
-        />
+        <RunSidePanel events={events} definition={definition} backpackCount={backpackCount} />
         <AiAssistant runId={runId} node={node} definition={definition} status={run.status} />
       </div>
     </div>

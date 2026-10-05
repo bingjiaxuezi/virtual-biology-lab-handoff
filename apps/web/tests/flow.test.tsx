@@ -2,7 +2,7 @@
  * 会话流程测试：用真实 experiment-runtime + InMemoryEventLog 实现一个内存版「后端」，
  * mock fetch 把 API 请求路由给它，验证前端从目录到完成的完整 80℃ 高温路径。
  */
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { InMemoryEventLog } from '@virtual-biology-lab/experiment-events';
 import { createExperimentRuntime } from '@virtual-biology-lab/experiment-runtime';
 import { MemoryRouter } from 'react-router-dom';
@@ -132,16 +132,23 @@ describe('student web flow (80℃ path)', () => {
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('得分')).toBeInTheDocument();
 
-    // 轨迹面板包含关键事件（可读摘要，不暴露内部 ID）
+    // 背包聚合关键记录（变量变化与观察全文）
     await waitFor(() => {
-      expect(screen.getAllByText('温度（temperature） → 80').length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/得分 \+10/).length).toBeGreaterThan(0);
-      expect(screen.getAllByText('提交观察「记录实验现象」').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('温度（temperature）').length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/→ 80/).length).toBeGreaterThan(0);
+      expect(screen.getAllByText('没有气泡产生').length).toBeGreaterThan(0);
     });
+
+    // 流程图已解锁走过路径（高温分支可见，正常结局仍在迷雾中）
+    const map = within(screen.getByLabelText('实验流程图'));
+    expect(map.getByText('高温失活现象')).toBeInTheDocument();
+    expect(map.queryByText('正常反应现象')).toBeNull();
 
     // 复盘页
     fireEvent.click(screen.getByText('查看实验复盘'));
     expect(await screen.findByText('实验复盘')).toBeInTheDocument();
-    expect(screen.getAllByText('完成实验').length).toBeGreaterThan(0);
+    const reviewMap = within(screen.getByLabelText('实验流程图'));
+    expect(reviewMap.getByText('正常反应现象')).toBeInTheDocument();
+    expect(reviewMap.queryByText('???')).toBeNull();
   });
 });
